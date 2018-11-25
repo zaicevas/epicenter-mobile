@@ -27,7 +27,8 @@ import {
   Camera,
   FileSystem,
   Permissions,
-  BarCodeScanner
+  BarCodeScanner,
+  Notifications
 } from "expo";
 
 const landmarkSize = 2;
@@ -69,7 +70,8 @@ const styles = StyleSheet.create({
 class CustomCamera extends React.Component {
   state = {
     hasCameraPermission: null,
-    type: Camera.Constants.Type.back
+    type: Camera.Constants.Type.back,
+    isFilming: false
   };
 
   async componentDidMount() {
@@ -78,26 +80,34 @@ class CustomCamera extends React.Component {
   }
 
   processPicture = picture => {
-    console.log("Request started");
     fetch("https://epicentertop.azurewebsites.net/api", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(picture.base64)
-    }).then(response => console.log(response));
+    }).then(response => {
+      console.log(response);
+      if (this.state.isFilming) this.takePicture();
+    });
   };
 
   takePicture = () => {
-    if (this.camera) {
-      this.camera.takePictureAsync({
-        base64: true,
-        onPictureSaved: picture => this.processPicture(picture)
-      });
-      this.setState({
-        foo: Math.random()
-      });
-    }
+    console.log("takePicture()");
+    this.camera.takePictureAsync({
+      base64: true,
+      quality: 0,
+      onPictureSaved: picture => this.processPicture(picture)
+    });
+    this.setState({
+      foo: Math.random()
+    });
+  };
+
+  onFilmButton = () => {
+    const { isFilming } = this.state;
+    if (this.camera && !isFilming) this.takePicture();
+    this.setState({ isFilming: !isFilming });
   };
 
   renderBottomBar = () => (
@@ -117,10 +127,18 @@ class CustomCamera extends React.Component {
       </TouchableOpacity>
       <View style={{ flex: 0.4 }}>
         <TouchableOpacity
-          onPress={this.takePicture}
+          onPress={this.onFilmButton}
           style={{ alignSelf: "center" }}
         >
-          <Ionicons name="ios-radio-button-on" size={70} color="white" />
+          <Ionicons
+            name={
+              this.state.isFilming
+                ? "ios-radio-button-off"
+                : "ios-radio-button-on"
+            }
+            size={70}
+            color={this.state.isFilming ? "red" : "white"}
+          />
         </TouchableOpacity>
       </View>
       <TouchableOpacity
