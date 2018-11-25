@@ -1,8 +1,5 @@
 import React from "react";
-import { ScrollView } from "react-native";
 import { ExpoLinksView } from "@expo/samples";
-
-import { Button } from "react-native";
 
 import {
   Alert,
@@ -67,6 +64,7 @@ const styles = StyleSheet.create({
   }
 });
 
+
 class CustomCamera extends React.Component {
   state = {
     hasCameraPermission: null,
@@ -75,8 +73,9 @@ class CustomCamera extends React.Component {
   };
 
   async componentDidMount() {
-    const { status } = await Permissions.askAsync(Permissions.CAMERA);
-    this.setState({ hasCameraPermission: status === "granted" });
+    const { permissions } = await Permissions.askAsync(Permissions.CAMERA, Permissions.NOTIFICATIONS);
+    this.setState({hasCameraPermission: permissions[Permissions.CAMERA].status === "granted"
+    });
   }
 
   processPicture = picture => {
@@ -93,7 +92,7 @@ class CustomCamera extends React.Component {
   };
 
   takePicture = () => {
-    console.log("takePicture()");
+    console.log(" takePicture()");
     this.camera.takePictureAsync({
       base64: true,
       quality: 0,
