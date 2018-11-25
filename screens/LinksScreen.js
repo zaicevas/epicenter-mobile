@@ -1,5 +1,6 @@
 import React from "react";
-import { ExpoLinksView } from "@expo/samples";
+import FlashMessage from "react-native-flash-message";
+import { showMessage, hideMessage } from "react-native-flash-message";
 
 import {
   Alert,
@@ -32,9 +33,8 @@ const landmarkSize = 2;
 
 export default class LinksScreen extends React.Component {
   static navigationOptions = {
-    title: "Camera"
+    header: null,
   };
-
   render() {
     return <CustomCamera />;
   }
@@ -92,6 +92,11 @@ class CustomCamera extends React.Component {
   };
 
   takePicture = () => {
+    showMessage({
+      message: "takePicture()",
+      description: "I've just taken a picture :)",
+      type: "success",
+    });
     console.log(" takePicture()");
     this.camera.takePictureAsync({
       base64: true,
@@ -175,6 +180,7 @@ class CustomCamera extends React.Component {
               {this.renderBottomBar()}
             </View>
           </Camera>
+          <FlashMessage position="top" hideStatusBar={true} />
         </View>
       );
     }
