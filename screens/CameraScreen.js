@@ -3,6 +3,8 @@ import FlashMessage from "react-native-flash-message";
 import { showMessage, hideMessage } from "react-native-flash-message";
 import NotificationPopup from "react-native-push-notification-popup";
 
+import { withNavigationFocus } from "react-navigation";
+
 import {
   Alert,
   StyleSheet,
@@ -30,12 +32,13 @@ import {
   Notifications
 } from "expo";
 
-export default class CameraScreen extends React.Component {
+class CameraScreen extends React.Component {
   static navigationOptions = {
     header: null
   };
+
   render() {
-    return <CustomCamera />;
+    return <CustomCamera isScreenFocused={this.props.isFocused} />;
   }
 }
 
@@ -69,6 +72,16 @@ class CustomCamera extends React.Component {
     type: Camera.Constants.Type.back,
     isFilming: false
   };
+  // componentWillReceiveProps(nextProps) {
+  //   if (!nextProps.isScreenFocused) {
+  //     this.setState({ isFilming: false });
+  //   }
+  // }
+
+  static getDerivedStateFromProps(props, state) {
+    if (!props.isScreenFocused) state.isFilming = false;
+    return state;
+  }
 
   async componentDidMount() {
     const { permissions } = await Permissions.askAsync(
@@ -78,10 +91,6 @@ class CustomCamera extends React.Component {
     this.setState({
       hasCameraPermission: permissions[Permissions.CAMERA].status === "granted"
     });
-  }
-
-  componentWillUnmount() {
-    console.log("unmounted");
   }
 
   processPicture = picture => {
@@ -98,11 +107,6 @@ class CustomCamera extends React.Component {
   };
 
   takePicture = () => {
-    // showMessage({
-    //   message: "takePicture()",
-    //   description: "I've just taken a picture :)",
-    //   type: "success",
-    // });
     this.popup.show({
       onPress: function() {
         console.log("Pressed");
@@ -216,3 +220,5 @@ class CustomCamera extends React.Component {
     }
   }
 }
+
+export default withNavigationFocus(CameraScreen);
