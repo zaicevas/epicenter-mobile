@@ -1,7 +1,7 @@
 import React from "react";
 import FlashMessage from "react-native-flash-message";
 import { showMessage, hideMessage } from "react-native-flash-message";
-import NotificationPopup from 'react-native-push-notification-popup';
+import NotificationPopup from "react-native-push-notification-popup";
 
 import {
   Alert,
@@ -30,11 +30,9 @@ import {
   Notifications
 } from "expo";
 
-const landmarkSize = 2;
-
 export default class LinksScreen extends React.Component {
   static navigationOptions = {
-    header: null,
+    header: null
   };
   render() {
     return <CustomCamera />;
@@ -65,7 +63,6 @@ const styles = StyleSheet.create({
   }
 });
 
-
 class CustomCamera extends React.Component {
   state = {
     hasCameraPermission: null,
@@ -74,8 +71,12 @@ class CustomCamera extends React.Component {
   };
 
   async componentDidMount() {
-    const { permissions } = await Permissions.askAsync(Permissions.CAMERA, Permissions.NOTIFICATIONS);
-    this.setState({hasCameraPermission: permissions[Permissions.CAMERA].status === "granted"
+    const { permissions } = await Permissions.askAsync(
+      Permissions.CAMERA,
+      Permissions.NOTIFICATIONS
+    );
+    this.setState({
+      hasCameraPermission: permissions[Permissions.CAMERA].status === "granted"
     });
   }
 
@@ -99,18 +100,29 @@ class CustomCamera extends React.Component {
     //   type: "success",
     // });
     this.popup.show({
-      onPress: function() {console.log('Pressed')},
-      appTitle: 'Some App',
-      timeText: 'Now',
-      title: 'Hello World',
-      body: 'This is a sample message.\nTesting emoji 😀',
+      onPress: function() {
+        console.log("Pressed");
+      },
+      appTitle: "Some App",
+      timeText: "Now",
+      title: "Hello World",
+      body: "This is a sample message.\nTesting emoji 😀"
     });
     console.log(" takePicture()");
-    this.camera.takePictureAsync({
-      base64: true,
-      quality: 0,
-      onPictureSaved: picture => this.processPicture(picture)
-    });
+    this.camera
+      .takePictureAsync({
+        base64: true,
+        quality: 0,
+        onPictureSaved: picture => this.processPicture(picture)
+      })
+      .catch(error => {
+        this.popup.show({
+          appTitle: "Some App",
+          timeText: "Now",
+          title: "Hello World",
+          body: error
+        });
+      });
     this.setState({
       foo: Math.random()
     });
@@ -188,7 +200,7 @@ class CustomCamera extends React.Component {
               {this.renderBottomBar()}
             </View>
           </Camera>
-          <NotificationPopup ref={ref => this.popup = ref} />
+          <NotificationPopup ref={ref => (this.popup = ref)} />
         </View>
       );
     }
