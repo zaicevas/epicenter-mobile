@@ -72,11 +72,6 @@ class CustomCamera extends React.Component {
     type: Camera.Constants.Type.back,
     isFilming: false
   };
-  // componentWillReceiveProps(nextProps) {
-  //   if (!nextProps.isScreenFocused) {
-  //     this.setState({ isFilming: false });
-  //   }
-  // }
 
   static getDerivedStateFromProps(props, state) {
     if (!props.isScreenFocused) state.isFilming = false;
@@ -101,21 +96,23 @@ class CustomCamera extends React.Component {
       },
       body: JSON.stringify(picture.base64)
     }).then(response => {
+      if (response.status === 200) this.showPopup();
       console.log(response);
       if (this.state.isFilming) this.takePicture();
     });
   };
 
-  takePicture = () => {
+  showPopup = response => {
     this.popup.show({
-      onPress: function() {
-        console.log("Pressed");
-      },
-      appTitle: "Some App",
+      appIconSource: require("../assets/images/robot-dev.jpg"),
+      appTitle: "Epicenter",
       timeText: "Now",
-      title: "Hello World",
+      title: "You've found something!",
       body: "This is a sample message.\nTesting emoji 😀"
     });
+  };
+
+  takePicture = () => {
     console.log(" takePicture()");
     this.camera
       .takePictureAsync({
