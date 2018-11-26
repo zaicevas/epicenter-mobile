@@ -30,7 +30,7 @@ import {
   Notifications
 } from "expo";
 
-export default class LinksScreen extends React.Component {
+export default class CameraScreen extends React.Component {
   static navigationOptions = {
     header: null
   };
@@ -78,6 +78,10 @@ class CustomCamera extends React.Component {
     this.setState({
       hasCameraPermission: permissions[Permissions.CAMERA].status === "granted"
     });
+  }
+
+  componentWillUnmount() {
+    console.log("unmounted");
   }
 
   processPicture = picture => {
@@ -147,7 +151,13 @@ class CustomCamera extends React.Component {
           });
         }}
       >
-        <Ionicons name="ios-reverse-camera" size={48} color="#e8e8e8" />
+        <Ionicons
+          name={
+            Platform.OS === "ios" ? "ios-reverse-camera" : "md-reverse-camera"
+          }
+          size={48}
+          color="#e8e8e8"
+        />
       </TouchableOpacity>
       <View style={{ flex: 0.4 }}>
         <TouchableOpacity
