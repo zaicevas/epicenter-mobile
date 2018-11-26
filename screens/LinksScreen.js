@@ -1,6 +1,7 @@
 import React from "react";
 import FlashMessage from "react-native-flash-message";
 import { showMessage, hideMessage } from "react-native-flash-message";
+import NotificationPopup from 'react-native-push-notification-popup';
 
 import {
   Alert,
@@ -92,10 +93,17 @@ class CustomCamera extends React.Component {
   };
 
   takePicture = () => {
-    showMessage({
-      message: "takePicture()",
-      description: "I've just taken a picture :)",
-      type: "success",
+    // showMessage({
+    //   message: "takePicture()",
+    //   description: "I've just taken a picture :)",
+    //   type: "success",
+    // });
+    this.popup.show({
+      onPress: function() {console.log('Pressed')},
+      appTitle: 'Some App',
+      timeText: 'Now',
+      title: 'Hello World',
+      body: 'This is a sample message.\nTesting emoji 😀',
     });
     console.log(" takePicture()");
     this.camera.takePictureAsync({
@@ -180,7 +188,7 @@ class CustomCamera extends React.Component {
               {this.renderBottomBar()}
             </View>
           </Camera>
-          <FlashMessage position="top" hideStatusBar={true} />
+          <NotificationPopup ref={ref => this.popup = ref} />
         </View>
       );
     }
