@@ -95,11 +95,29 @@ class CustomCamera extends React.Component {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(picture.base64)
-    }).then(response => {
-      if (response.status === 200) this.showPopup();
-      console.log(response);
-      if (this.state.isFilming) this.takePicture();
-    });
+    })
+      .then(
+        response =>
+          new Promise(function(resolve, reject) {
+            if (response.status !== 200) reject("Response status is not 200");
+            else resolve(response.json());
+          }),
+        ex => {
+          this.setState({ isFilming: false });
+          showErrorPopup(ex);
+        }
+      )
+      .then(
+        response => {
+          this.showPopup();
+          console.log(response);
+          // user might have pushed the button or switched the tabs, so let's check isFilming
+          if (this.state.isFilming) this.takePicture();
+        },
+        err => {
+          if (this.state.isFilming) this.takePicture();
+        }
+      );
   };
 
   showPopup = response => {
@@ -109,6 +127,15 @@ class CustomCamera extends React.Component {
       timeText: "Now",
       title: "You've found something!",
       body: "This is a sample message.\nTesting emoji 😀"
+    });
+  };
+  showErrorPopup = message => {
+    this.popup.show({
+      appIconSource: require("../assets/images/robot-dev.jpg"),
+      appTitle: "Epicenter",
+      timeText: "Now",
+      title: "Error!",
+      body: message
     });
   };
 
