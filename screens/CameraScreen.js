@@ -99,6 +99,7 @@ class CustomCamera extends React.Component {
       .then(
         response =>
           new Promise(function(resolve, reject) {
+            console.log(response);
             if (response.status !== 200) reject("Response status is not 200");
             else resolve(response.json());
           }),
@@ -109,10 +110,11 @@ class CustomCamera extends React.Component {
       )
       .then(
         response => {
+          if (!this.state.isFilming)  // if user switched tab/pressed on filming, we don't show the notification any more
+            return;
           this.showPopup(response);
-          console.log(response);
           // user might have pushed the button or switched the tabs, so let's check isFilming
-          if (this.state.isFilming) this.takePicture();
+        this.takePicture();
         },
         err => {
           if (this.state.isFilming) this.takePicture();
@@ -121,25 +123,26 @@ class CustomCamera extends React.Component {
   };
 
   showPopup = response => {
+    if (!response) return null;
     const modelType = ["Person", "Car"]; // Plate (instead of Car) in backend
     const searchReason = ["Not searched", "Missing", "Criminal", "Other"];
     let message = "";
     response.forEach(recognizedObject => {
       const fullName =
         recognizedObject.firstName + " " + recognizedObject.lastName;
-      if (modelType[response["type"]] === "Car") {
+      if (modelType[recognizedObject["type"]] === "Car") {
         message +=
-          `${searchReason[recognizedObject.reason]} car ${
-            recognizedObject.message
-          } (belongs to ${fullName})` + "\n";
+          `${searchReason[
+            recognizedObject.reason
+          ]} car ${recognizedObject.message} (belongs to ${fullName})` + "\n";
       } else if (modelType[recognizedObject["type"]] === "Person") {
         message +=
           `FOUND: ${searchReason[recognizedObject.reason]} ${fullName}.` + "\n";
       }
       message +=
-        `${modelType[recognizedObject["type"]]} was last seen at ${
-          recognizedObject.lastSeen
-        }` + "\n";
+        `${modelType[
+          recognizedObject["type"]
+        ]} was last seen at ${recognizedObject.lastSeen}` + "\n";
     });
     this.popup.show({
       appIconSource: require("../assets/images/robot-dev.jpg"),
@@ -168,13 +171,10 @@ class CustomCamera extends React.Component {
         onPictureSaved: picture => this.processPicture(picture)
       })
       .catch(error => {
-        console.log("TAKEPICTUREASYNC CATCH");
-        this.popup.show({
-          appTitle: "Some App",
-          timeText: "Now",
-          title: "Hello World",
-          body: error
-        });
+        // TODO: only show error popup when a lot of takePicture() end up there
+        this.showErrorPopup(String(error));
+        this.takePicture();
+        //this.showErrorPopup(error);         // this doesn't work
       });
     this.setState({
       foo: Math.random()
