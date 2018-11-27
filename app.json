@@ -1,14 +1,15 @@
 {
   "expo": {
-    "name": "non-expokit",
-    "description": "A very interesting project.",
-    "slug": "non-expokit",
+    "name": "Epicenter",
+    "description": "Track your friends and foes.",
+    "slug": "press-the-enter",
     "privacy": "public",
     "sdkVersion": "31.0.0",
     "platforms": ["ios", "android"],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
+    "githubUrl": "https://github.com/tozaicevas/epicenter-mobile",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
