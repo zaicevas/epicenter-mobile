@@ -105,7 +105,7 @@ class CustomCamera extends React.Component {
           }),
         ex => {
           this.setState({ isFilming: false });
-          this.showErrorPopup(ex);
+          this.showErrorPopup(String(ex));
         }
       )
       .then(
