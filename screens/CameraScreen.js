@@ -104,12 +104,12 @@ class CustomCamera extends React.Component {
           }),
         ex => {
           this.setState({ isFilming: false });
-          showErrorPopup(ex);
+          this.showErrorPopup(ex);
         }
       )
       .then(
         response => {
-          this.showPopup();
+          this.showPopup(response);
           console.log(response);
           // user might have pushed the button or switched the tabs, so let's check isFilming
           if (this.state.isFilming) this.takePicture();
@@ -121,12 +121,32 @@ class CustomCamera extends React.Component {
   };
 
   showPopup = response => {
+    const modelType = ["Person", "Car"]; // Plate (instead of Car) in backend
+    const searchReason = ["Not searched", "Missing", "Criminal", "Other"];
+    let message = "";
+    response.forEach(recognizedObject => {
+      const fullName =
+        recognizedObject.firstName + " " + recognizedObject.lastName;
+      if (modelType[response["type"]] === "Car") {
+        message +=
+          `${searchReason[recognizedObject.reason]} car ${
+            recognizedObject.message
+          } (belongs to ${fullName})` + "\n";
+      } else if (modelType[recognizedObject["type"]] === "Person") {
+        message +=
+          `FOUND: ${searchReason[recognizedObject.reason]} ${fullName}.` + "\n";
+      }
+      message +=
+        `${modelType[recognizedObject["type"]]} was last seen at ${
+          recognizedObject.lastSeen
+        }` + "\n";
+    });
     this.popup.show({
       appIconSource: require("../assets/images/robot-dev.jpg"),
       appTitle: "Epicenter",
       timeText: "Now",
       title: "You've found something!",
-      body: "This is a sample message.\nTesting emoji 😀"
+      body: message
     });
   };
   showErrorPopup = message => {
@@ -148,6 +168,7 @@ class CustomCamera extends React.Component {
         onPictureSaved: picture => this.processPicture(picture)
       })
       .catch(error => {
+        console.log("TAKEPICTUREASYNC CATCH");
         this.popup.show({
           appTitle: "Some App",
           timeText: "Now",
