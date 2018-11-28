@@ -4,6 +4,7 @@ import { showMessage, hideMessage } from "react-native-flash-message";
 import NotificationPopup from "react-native-push-notification-popup";
 
 import { withNavigationFocus } from "react-navigation";
+import "abortcontroller-polyfill";
 
 import {
   Alert,
@@ -31,6 +32,10 @@ import {
   BarCodeScanner,
   Notifications
 } from "expo";
+
+const AbortController = window.AbortController;
+const controller = new AbortController();
+const signal = controller.signal;
 
 class CameraScreen extends React.Component {
   static navigationOptions = {
@@ -78,11 +83,15 @@ class CustomCamera extends React.Component {
     return state;
   }
 
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (prevState.isFilming !== this.state.isFilming && !this.state.isFilming) {
+      console.log("ABORTING FETCH");
+      controller.abort();
+    }
+  }
+
   async componentDidMount() {
-    const { permissions } = await Permissions.askAsync(
-      Permissions.CAMERA,
-      Permissions.NOTIFICATIONS
-    );
+    const { permissions } = await Permissions.askAsync(Permissions.CAMERA);
     this.setState({
       hasCameraPermission: permissions[Permissions.CAMERA].status === "granted"
     });
@@ -91,6 +100,7 @@ class CustomCamera extends React.Component {
   processPicture = picture => {
     fetch("https://epicentertop.azurewebsites.net/api", {
       method: "POST",
+      signal: signal,
       headers: {
         "Content-Type": "application/json"
       },
@@ -110,11 +120,12 @@ class CustomCamera extends React.Component {
       )
       .then(
         response => {
-          if (!this.state.isFilming)  // if user switched tab/pressed on filming, we don't show the notification any more
+          if (!this.state.isFilming)
+            // if user switched tab/pressed on filming, we don't show the notification any more
             return;
           this.showPopup(response);
           // user might have pushed the button or switched the tabs, so let's check isFilming
-        this.takePicture();
+          this.takePicture();
         },
         err => {
           if (this.state.isFilming) this.takePicture();
@@ -132,17 +143,17 @@ class CustomCamera extends React.Component {
         recognizedObject.firstName + " " + recognizedObject.lastName;
       if (modelType[recognizedObject["type"]] === "Car") {
         message +=
-          `${searchReason[
-            recognizedObject.reason
-          ]} car ${recognizedObject.message} (belongs to ${fullName})` + "\n";
+          `${searchReason[recognizedObject.reason]} car ${
+            recognizedObject.message
+          } (belongs to ${fullName})` + "\n";
       } else if (modelType[recognizedObject["type"]] === "Person") {
         message +=
           `FOUND: ${searchReason[recognizedObject.reason]} ${fullName}.` + "\n";
       }
       message +=
-        `${modelType[
-          recognizedObject["type"]
-        ]} was last seen at ${recognizedObject.lastSeen}` + "\n";
+        `${modelType[recognizedObject["type"]]} was last seen at ${
+          recognizedObject.lastSeen
+        }` + "\n";
     });
     this.popup.show({
       appIconSource: require("../assets/images/robot-dev.jpg"),
@@ -174,7 +185,6 @@ class CustomCamera extends React.Component {
         // TODO: only show error popup when a lot of takePicture() end up there
         this.showErrorPopup(String(error));
         this.takePicture();
-        //this.showErrorPopup(error);         // this doesn't work
       });
     this.setState({
       foo: Math.random()
