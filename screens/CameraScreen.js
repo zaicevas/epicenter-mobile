@@ -114,8 +114,10 @@ class CustomCamera extends React.Component {
             else resolve(response.json());
           }),
         ex => {
-          this.setState({ isFilming: false });
-          this.showErrorPopup(String(ex));
+          if (ex.name !== "AbortError") {
+            this.setState({ isFilming: false });
+            this.showErrorPopup(String(ex));
+          }
         }
       )
       .then(
@@ -184,7 +186,7 @@ class CustomCamera extends React.Component {
       .catch(error => {
         // TODO: only show error popup when a lot of takePicture() end up there
         this.showErrorPopup(String(error));
-        this.takePicture();
+        if (this.state.isFilming) this.takePicture();
       });
     this.setState({
       foo: Math.random()
