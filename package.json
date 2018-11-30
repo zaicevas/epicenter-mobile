@@ -7,7 +7,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "eject": "expo eject",
-    "test": "node ./node_modules/jest/bin/jest.js --watchAll"
+    "test": "node ./node_modules/jest/bin/jest.js --watchAll",
+    "postinstall": "rndebugger-open --expo"
   },
   "jest": {
     "preset": "jest-expo"
@@ -18,12 +19,14 @@
     "expo": "^31.0.2",
     "react": "16.5.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-31.0.0.tar.gz",
+    "react-native-debugger": "^1.1.0",
     "react-native-flash-message": "^0.1.10",
     "react-native-push-notification-popup": "^1.1.1",
     "react-navigation": "^2.18.2"
   },
   "devDependencies": {
     "babel-preset-expo": "^5.0.0",
-    "jest-expo": "^31.0.0"
+    "jest-expo": "^31.0.0",
+    "react-native-debugger-open": "^0.3.17"
   }
 }

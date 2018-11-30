@@ -79,13 +79,17 @@ class CustomCamera extends React.Component {
   };
 
   static getDerivedStateFromProps(props, state) {
-    if (!props.isScreenFocused) state.isFilming = false;
+    if (!props.isScreenFocused) {
+      state.isFilming = false;
+      console.log("Camera screen is no longer focused");
+      controller.abort();
+    }
     return state;
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
     if (prevState.isFilming !== this.state.isFilming && !this.state.isFilming) {
-      console.log("ABORTING FETCH");
+      console.log("componentDidUpdate");
       controller.abort();
     }
   }
@@ -117,6 +121,9 @@ class CustomCamera extends React.Component {
           if (ex.name !== "AbortError") {
             this.setState({ isFilming: false });
             this.showErrorPopup(String(ex));
+          } else {
+            console.log("FETCH ABORTED");
+            signal.aborted = false;
           }
         }
       )
@@ -176,7 +183,7 @@ class CustomCamera extends React.Component {
   };
 
   takePicture = () => {
-    console.log(" takePicture()");
+    console.log("takePicture()");
     this.camera
       .takePictureAsync({
         base64: true,
