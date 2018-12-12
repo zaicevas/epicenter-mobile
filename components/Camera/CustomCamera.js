@@ -181,7 +181,7 @@ class CustomCamera extends React.Component {
                     const getStateType = () => this.state.type;
                     this.setState({
                         type:
-                            getStateType === Camera.Constants.Type.back
+                            getStateType() === Camera.Constants.Type.back
                                 ? Camera.Constants.Type.front
                                 : Camera.Constants.Type.back,
                     });
