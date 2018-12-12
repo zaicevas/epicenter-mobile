@@ -3,10 +3,8 @@
 import React from 'react';
 import NotificationPopup from 'react-native-push-notification-popup';
 import 'abortcontroller-polyfill';
-
 import { Text, View } from 'react-native';
-
-import { Camera, Permissions } from 'expo';
+import { Camera, Permissions, FaceDetector } from 'expo';
 import BottomBar from './BottomBar';
 
 const MAX_PICTURE_ERRORS = 5;
@@ -65,15 +63,17 @@ class CustomCamera extends React.Component {
         this.setState({ foo: Math.random() }); // workaround for react-native bug
     };
 
-    processPicture = (picture) => {
-        this.pictureTakeError = 0;
-        const requestBody = {
-            latitude: 0.0,
-            longitude: 0.0,
-            imageBase64: picture.base64,
-            findPlate: true,
-            findFace: true,
+    detectFaces = (imageUri) => {
+        const options = {
+            mode: FaceDetector.Constants.Mode.fast,
+            detectLandmarks: FaceDetector.Constants.Mode.none,
+            runClassifications: FaceDetector.Constants.Mode.none,
+            // FaceDetector.Constants.Classifications.all for smile
         };
+        return FaceDetector.detectFacesAsync(imageUri, options);
+    };
+
+    doRecognition = (requestBody) => {
         fetch('https://epicentereu.azurewebsites.net/api', {
             method: 'POST',
             signal,
@@ -115,6 +115,30 @@ class CustomCamera extends React.Component {
                     if (this.state.isFilming) this.takePicture();
                 },
             );
+    };
+
+    getRequestBody = (detectedFaces, base64) => ({
+        latitude: 0.0,
+        longitude: 0.0,
+        imageBase64: base64,
+        findPlate: true,
+        findFace: detectedFaces > 0,
+    });
+
+    processPicture = (picture) => {
+        this.pictureTakeError = 0;
+        this.detectFaces(picture.uri).then(
+            (response) => {
+                console.log(`FACES AMOUNT: ${response.faces.length}`);
+                const requestBody = this.getRequestBody(response.faces.length, picture.base64);
+                this.doRecognition(requestBody);
+            },
+            (error) => {
+                console.log(`Error in FaceDetector: ${String(error)}`);
+                const requestBody = this.getRequestBody(1, picture.base64);
+                this.doRecognition(requestBody);
+            },
+        );
     };
 
     showPopup = (response) => {
