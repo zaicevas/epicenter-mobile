@@ -3,41 +3,21 @@ import React from 'react';
 import NotificationPopup from 'react-native-push-notification-popup';
 import 'abortcontroller-polyfill';
 
-import {
-    StyleSheet, Text, View, TouchableOpacity, Platform,
-} from 'react-native';
-
-import { Ionicons, Octicons } from '@expo/vector-icons';
+import { Text, View } from 'react-native';
 
 import { Camera, Permissions } from 'expo';
+import BottomBar from './BottomBar';
 
 const { AbortController } = window;
 const controller = new AbortController();
 const { signal } = controller;
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingTop: 15,
-        backgroundColor: '#fff',
-    },
-    bottomButton: {
-        marginBottom: 0,
-        flex: 0.3,
-        height: 58,
-        justifyContent: 'center',
-        alignSelf: 'center',
-        alignItems: 'center',
-    },
-    bottomBar: {
-        paddingBottom: 5,
-        backgroundColor: 'transparent',
-        alignSelf: 'flex-end',
-        justifyContent: 'space-between',
-        flex: 1,
-        flexDirection: 'row',
-    },
-});
+/*
+    props.type
+    props.setParentState()
+    props.isFilming
+    props.onFilmButton()
+*/
 
 class CustomCamera extends React.Component {
     state = {
@@ -64,6 +44,7 @@ class CustomCamera extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
+        console.log('UPDATE');
         if (prevState.isFilming !== this.state.isFilming && !this.state.isFilming) {
             console.log('componentDidUpdate');
             controller.abort();
@@ -123,9 +104,9 @@ class CustomCamera extends React.Component {
             if (modelType[recognizedObject.type] === 'Car') {
                 message += `${searchReason[recognizedObject.reason]} car ${
                     recognizedObject.message
-                } (belongs to ${fullName})\n`;
+                } (Owner: ${fullName})\n`;
             } else if (modelType[recognizedObject.type] === 'Person') {
-                message += `FOUND: ${searchReason[recognizedObject.reason]} ${fullName}.\n`;
+                message += `${searchReason[recognizedObject.reason]} ${fullName}.\n`;
             }
             message += `${modelType[recognizedObject.type]} was last seen at ${
                 recognizedObject.lastSeen
@@ -173,41 +154,6 @@ class CustomCamera extends React.Component {
         this.setState({ isFilming: !isFilming });
     };
 
-    renderBottomBar = () => (
-        <View style={styles.bottomBar}>
-            <TouchableOpacity
-                style={styles.bottomButton}
-                onPress={() => {
-                    const getStateType = () => this.state.type;
-                    this.setState({
-                        type:
-                            getStateType() === Camera.Constants.Type.back
-                                ? Camera.Constants.Type.front
-                                : Camera.Constants.Type.back,
-                    });
-                }}
-            >
-                <Ionicons
-                    name={Platform.OS === 'ios' ? 'ios-reverse-camera' : 'md-reverse-camera'}
-                    size={48}
-                    color="#e8e8e8"
-                />
-            </TouchableOpacity>
-            <View style={{ flex: 0.4 }}>
-                <TouchableOpacity onPress={this.onFilmButton} style={{ alignSelf: 'center' }}>
-                    <Ionicons
-                        name={this.state.isFilming ? 'ios-radio-button-off' : 'ios-radio-button-on'}
-                        size={70}
-                        color={this.state.isFilming ? 'red' : 'white'}
-                    />
-                </TouchableOpacity>
-            </View>
-            <TouchableOpacity style={styles.bottomButton} onPress={this.toggleMoreOptions}>
-                <Octicons name="kebab-horizontal" size={30} color="white" />
-            </TouchableOpacity>
-        </View>
-    );
-
     render() {
         const { hasCameraPermission } = this.state;
         if (hasCameraPermission === null) {
@@ -232,7 +178,12 @@ class CustomCamera extends React.Component {
                             flexDirection: 'row',
                         }}
                     >
-                        {this.renderBottomBar()}
+                        <BottomBar
+                            type={this.state.type}
+                            setParentCameraType={type => this.setState({ type })}
+                            isFilming={this.state.isFilming}
+                            onFilmButton={() => this.onFilmButton()}
+                        />
                     </View>
                 </Camera>
                 <NotificationPopup ref={ref => (this.popup = ref)} />
