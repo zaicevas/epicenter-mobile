@@ -13,6 +13,21 @@ const BottomBar = ({
     <View style={styles.bottomBar}>
         <TouchableOpacity
             style={styles.bottomButton}
+            onPress={() => console.log('Camera options toggle')}
+        >
+            <Octicons name="kebab-horizontal" size={30} color="white" />
+        </TouchableOpacity>
+        <View style={{ flex: 0.6 }}>
+            <TouchableOpacity onPress={onFilmButton} style={{ alignSelf: 'center' }}>
+                <Ionicons
+                    name={isFilming ? 'ios-radio-button-off' : 'ios-radio-button-on'}
+                    size={70}
+                    color={isFilming ? 'red' : 'white'}
+                />
+            </TouchableOpacity>
+        </View>
+        <TouchableOpacity
+            style={styles.bottomButton}
             onPress={() => {
                 const getStateType = () => type;
                 setParentCameraType(
@@ -27,21 +42,6 @@ const BottomBar = ({
                 size={48}
                 color="#e8e8e8"
             />
-        </TouchableOpacity>
-        <View style={{ flex: 0.4 }}>
-            <TouchableOpacity onPress={onFilmButton} style={{ alignSelf: 'center' }}>
-                <Ionicons
-                    name={isFilming ? 'ios-radio-button-off' : 'ios-radio-button-on'}
-                    size={70}
-                    color={isFilming ? 'red' : 'white'}
-                />
-            </TouchableOpacity>
-        </View>
-        <TouchableOpacity
-            style={styles.bottomButton}
-            onPress={() => console.log('Camera options toggle')}
-        >
-            <Octicons name="kebab-horizontal" size={30} color="white" />
         </TouchableOpacity>
     </View>
 );
