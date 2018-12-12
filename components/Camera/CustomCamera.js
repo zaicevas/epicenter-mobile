@@ -57,8 +57,7 @@ class CustomCamera extends React.Component {
             .then(
                 response => new Promise((resolve, reject) => {
                     console.log(response);
-                    if (response.status !== 200) reject(new Error('Response status is not 200'));
-                    else resolve(response.json());
+                    if (response.status !== 200) { reject(new Error('Response status is not 200')); } else resolve(response.json());
                 }),
                 (ex) => {
                     if (ex.name !== 'AbortError') {
