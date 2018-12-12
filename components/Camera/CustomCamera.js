@@ -1,4 +1,5 @@
 /* eslint-disable global-require */
+/* eslint-disable linebreak-style */
 import React from 'react';
 import NotificationPopup from 'react-native-push-notification-popup';
 import 'abortcontroller-polyfill';
@@ -57,7 +58,9 @@ class CustomCamera extends React.Component {
             .then(
                 response => new Promise((resolve, reject) => {
                     console.log(response);
-                    if (response.status !== 200) { reject(new Error('Response status is not 200')); } else resolve(response.json());
+                    if (response.status !== 200) {
+                        reject(new Error('Response status is not 200'));
+                    } else resolve(response.json());
                 }),
                 (ex) => {
                     if (ex.name !== 'AbortError') {
@@ -125,6 +128,7 @@ class CustomCamera extends React.Component {
     };
 
     takePicture = () => {
+        console.log('takePicture()');
         this.camera
             .takePictureAsync({
                 base64: true,
