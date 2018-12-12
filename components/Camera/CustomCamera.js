@@ -45,15 +45,42 @@ class CustomCamera extends React.Component {
         if (validState) controller.abort();
     }
 
+    takePicture = () => {
+        console.log('takePicture()');
+        this.camera
+            .takePictureAsync({
+                base64: true,
+                quality: 0,
+                onPictureSaved: picture => this.processPicture(picture),
+            })
+            .catch((error) => {
+                this.pictureTakeError += 1;
+                // TODO: only show error popup when a lot of takePicture() end up there
+                if (this.pictureTakeError >= MAX_PICTURE_ERRORS) {
+                    this.showErrorPopup(String(error));
+                    this.setState({ isFilming: false });
+                } else if (this.state.isFilming) this.takePicture();
+            });
+        // eslint-disable-next-line react/no-unused-state
+        this.setState({ foo: Math.random() }); // workaround for react-native bug
+    };
+
     processPicture = (picture) => {
         this.pictureTakeError = 0;
-        fetch('https://epicentertop.azurewebsites.net/api', {
+        const requestBody = {
+            latitude: 0.0,
+            longitude: 0.0,
+            imageBase64: picture.base64,
+            findPlate: true,
+            findFace: true,
+        };
+        fetch('https://epicentereu.azurewebsites.net/api', {
             method: 'POST',
             signal,
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(picture.base64),
+            body: JSON.stringify(requestBody),
         })
             .then(
                 response => new Promise((resolve, reject) => {
@@ -79,7 +106,7 @@ class CustomCamera extends React.Component {
                         // we don't show the notification any more
                         return;
                     }
-                    this.showPopup(response);
+                    if (response.length > 0) this.showPopup(response);
                     // user might have pushed the button or switched the tabs,
                     // so let's check isFilming
                     this.takePicture();
@@ -125,26 +152,6 @@ class CustomCamera extends React.Component {
             title: 'Error',
             body: message,
         });
-    };
-
-    takePicture = () => {
-        console.log('takePicture()');
-        this.camera
-            .takePictureAsync({
-                base64: true,
-                quality: 0,
-                onPictureSaved: picture => this.processPicture(picture),
-            })
-            .catch((error) => {
-                this.pictureTakeError += 1;
-                // TODO: only show error popup when a lot of takePicture() end up there
-                if (this.pictureTakeError >= MAX_PICTURE_ERRORS) {
-                    this.showErrorPopup(String(error));
-                    this.setState({ isFilming: false });
-                } else if (this.state.isFilming) this.takePicture();
-            });
-        // eslint-disable-next-line react/no-unused-state
-        this.setState({ foo: Math.random() });
     };
 
     onFilmButton = () => {
