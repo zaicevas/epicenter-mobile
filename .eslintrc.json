@@ -1,0 +1,26 @@
+{
+    "parser": "babel-eslint",
+    "extends": "airbnb",
+    "rules": {
+        "class-methods-use-this": "off",
+        "import/prefer-default-export": "off",
+        "indent": ["error", 4],
+        "react/destructuring-assignment": [false, "always"],
+        "react/jsx-filename-extension": "off",
+        "react/jsx-indent": ["error", 4],
+        "react/jsx-indent-props": ["error", 4],
+        "react/forbid-foreign-prop-types": "off",
+        "import/no-extraneous-dependencies": [
+            {
+                "devDependencies": true,
+                "optionalDependencies": true,
+                "peerDependencies": true
+            }
+        ],
+        "no-return-assign": "off",
+        "consistent-return": "off"
+    },
+    "env": {
+        "browser": true
+    }
+}
