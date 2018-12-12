@@ -8,6 +8,8 @@ import { Camera, Permissions, FaceDetector } from 'expo';
 import BottomBar from './BottomBar';
 
 const MAX_PICTURE_ERRORS = 5;
+const MILISECOND = 1000;
+const ENTITY_NOTIFICATION_INTERVAL_IN_SECONDS = 10000;
 
 const { AbortController } = window;
 const controller = new AbortController();
@@ -21,6 +23,8 @@ class CustomCamera extends React.Component {
     };
 
     pictureTakeError = 0;
+
+    entitiesSet = new Set();
 
     static getDerivedStateFromProps(props, state) {
         if (!props.isScreenFocused) {
@@ -39,8 +43,11 @@ class CustomCamera extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        const validState = prevState.isFilming !== this.state.isFilming && !this.state.isFilming;
-        if (validState) controller.abort();
+        const isFilmingChanged = prevState.isFilming !== this.state.isFilming;
+        const stoppedFilming = isFilmingChanged && !this.state.isFilming;
+        const startedFilming = isFilmingChanged && this.state.isFilming;
+        if (stoppedFilming) controller.abort();
+        else if (startedFilming) signal.aborted = false;
     }
 
     takePicture = () => {
@@ -73,8 +80,18 @@ class CustomCamera extends React.Component {
         return FaceDetector.detectFacesAsync(imageUri, options);
     };
 
+    getUnseenEntities = (response) => {
+        const unseenEntities = [];
+        response.forEach((recognizedObject) => {
+            if (!this.entitiesSet.has(recognizedObject.id)) {
+                unseenEntities.push(recognizedObject);
+            }
+        });
+        return unseenEntities;
+    };
+
     doRecognition = (requestBody) => {
-        fetch('https://epicentereu.azurewebsites.net/api', {
+        fetch('http://localhost:62290/api', {
             method: 'POST',
             signal,
             headers: {
@@ -89,30 +106,31 @@ class CustomCamera extends React.Component {
                         reject(new Error('Response status is not 200'));
                     } else resolve(response.json());
                 }),
-                (ex) => {
+                ex => new Promise((resolve, reject) => {
+                    console.log('Catch in doRecognition');
                     if (ex.name !== 'AbortError') {
-                        this.setState({ isFilming: false });
                         this.showErrorPopup(String(ex));
-                    } else {
-                        console.log('FETCH ABORTED');
-                        signal.aborted = false;
                     }
-                },
+                    this.setState({ isFilming: false });
+                    reject();
+                }),
             )
             .then(
                 (response) => {
+                    console.log('Successfull promise chain in doRecognition()');
                     if (!this.state.isFilming) {
                         // if user switched tab/pressed on filming,
                         // we don't show the notification any more
                         return;
                     }
-                    if (response.length > 0) this.showPopup(response);
-                    // user might have pushed the button or switched the tabs,
-                    // so let's check isFilming
+
+                    const unseenEntities = this.getUnseenEntities(response);
+
+                    if (unseenEntities.length > 0) this.showNotification(unseenEntities);
                     this.takePicture();
                 },
                 () => {
-                    if (this.state.isFilming) this.takePicture();
+                    console.log('Network error caught in promise doRecognition()');
                 },
             );
     };
@@ -141,7 +159,7 @@ class CustomCamera extends React.Component {
         );
     };
 
-    showPopup = (response) => {
+    showNotification = (response) => {
         if (!response) return null;
         const modelType = ['Person', 'Car']; // Plate (instead of Car) in backend
         const searchReason = ['Not searched', 'Missing', 'Criminal', 'Other'];
@@ -183,6 +201,19 @@ class CustomCamera extends React.Component {
         if (this.camera && !isFilming) this.takePicture();
         this.setState({ isFilming: !isFilming });
     };
+
+    updateEntitiesSet(recognizedObjects) {
+        console.log('updateEntitiesSet');
+        recognizedObjects.forEach((recognizedObject) => {
+            const { id } = recognizedObject;
+            this.entitiesSet.add(id);
+            setTimeout(() => {
+                console.log(`${id} deleted`);
+                this.entitiesSet.delete(id);
+            }, ENTITY_NOTIFICATION_INTERVAL_IN_SECONDS * MILISECOND);
+        });
+        console.log(this.entitiesSet);
+    }
 
     render() {
         const { hasCameraPermission } = this.state;
