@@ -81,17 +81,19 @@ class CustomCamera extends React.Component {
     };
 
     getUnseenEntities = (response) => {
+        console.log('getUnseenEntities()');
         const unseenEntities = [];
         response.forEach((recognizedObject) => {
             if (!this.entitiesSet.has(recognizedObject.id)) {
                 unseenEntities.push(recognizedObject);
             }
         });
+        this.updateEntitiesSet(unseenEntities);
         return unseenEntities;
     };
 
     doRecognition = (requestBody) => {
-        fetch('http://localhost:62290/api', {
+        fetch('https://epicentereu.azurewebsites.net/api', {
             method: 'POST',
             signal,
             headers: {
@@ -117,7 +119,7 @@ class CustomCamera extends React.Component {
             )
             .then(
                 (response) => {
-                    console.log('Successfull promise chain in doRecognition()');
+                    console.log('Successful promise chain in doRecognition()');
                     if (!this.state.isFilming) {
                         // if user switched tab/pressed on filming,
                         // we don't show the notification any more
@@ -203,7 +205,8 @@ class CustomCamera extends React.Component {
     };
 
     updateEntitiesSet(recognizedObjects) {
-        console.log('updateEntitiesSet');
+        console.log('updateEntitiesSet()');
+        console.log(recognizedObjects);
         recognizedObjects.forEach((recognizedObject) => {
             const { id } = recognizedObject;
             this.entitiesSet.add(id);
@@ -212,7 +215,6 @@ class CustomCamera extends React.Component {
                 this.entitiesSet.delete(id);
             }, ENTITY_NOTIFICATION_INTERVAL_IN_SECONDS * MILISECOND);
         });
-        console.log(this.entitiesSet);
     }
 
     render() {
