@@ -111,9 +111,7 @@ class CustomCamera extends React.Component {
                 }),
                 ex => new Promise((resolve, reject) => {
                     console.log('Catch in doRecognition');
-                    if (ex.name !== 'AbortError') {
-                        this.showErrorPopup(String(ex));
-                    }
+                    if (ex.name !== 'AbortError') this.showErrorPopup(String(ex));
                     this.setState({ isFilming: false });
                     reject();
                 }),
