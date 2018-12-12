@@ -8,16 +8,11 @@ import { Text, View } from 'react-native';
 import { Camera, Permissions } from 'expo';
 import BottomBar from './BottomBar';
 
+const MAX_PICTURE_ERRORS = 5;
+
 const { AbortController } = window;
 const controller = new AbortController();
 const { signal } = controller;
-
-/*
-    props.type
-    props.setParentState()
-    props.isFilming
-    props.onFilmButton()
-*/
 
 class CustomCamera extends React.Component {
     state = {
@@ -26,11 +21,12 @@ class CustomCamera extends React.Component {
         isFilming: false,
     };
 
+    pictureTakeError = 0;
+
     static getDerivedStateFromProps(props, state) {
         if (!props.isScreenFocused) {
             // eslint-disable-next-line no-param-reassign
             state.isFilming = false;
-            console.log('Camera screen is no longer focused');
             controller.abort();
         }
         return state;
@@ -44,14 +40,12 @@ class CustomCamera extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        console.log('UPDATE');
-        if (prevState.isFilming !== this.state.isFilming && !this.state.isFilming) {
-            console.log('componentDidUpdate');
-            controller.abort();
-        }
+        const validState = prevState.isFilming !== this.state.isFilming && !this.state.isFilming;
+        if (validState) controller.abort();
     }
 
     processPicture = (picture) => {
+        this.pictureTakeError = 0;
         fetch('https://epicentertop.azurewebsites.net/api', {
             method: 'POST',
             signal,
@@ -126,13 +120,12 @@ class CustomCamera extends React.Component {
             appIconSource: require('../../assets/images/robot-dev.jpg'),
             appTitle: 'Epicenter',
             timeText: 'Now',
-            title: 'Error!',
+            title: 'Error',
             body: message,
         });
     };
 
     takePicture = () => {
-        console.log('takePicture()');
         this.camera
             .takePictureAsync({
                 base64: true,
@@ -140,9 +133,12 @@ class CustomCamera extends React.Component {
                 onPictureSaved: picture => this.processPicture(picture),
             })
             .catch((error) => {
+                this.pictureTakeError += 1;
                 // TODO: only show error popup when a lot of takePicture() end up there
-                this.showErrorPopup(String(error));
-                if (this.state.isFilming) this.takePicture();
+                if (this.pictureTakeError >= MAX_PICTURE_ERRORS) {
+                    this.showErrorPopup(String(error));
+                    this.setState({ isFilming: false });
+                } else if (this.state.isFilming) this.takePicture();
             });
         // eslint-disable-next-line react/no-unused-state
         this.setState({ foo: Math.random() });
@@ -156,12 +152,8 @@ class CustomCamera extends React.Component {
 
     render() {
         const { hasCameraPermission } = this.state;
-        if (hasCameraPermission === null) {
-            return <View />;
-        }
-        if (hasCameraPermission === false) {
-            return <Text>No access to camera</Text>;
-        }
+        if (hasCameraPermission === null) return <View />;
+        if (hasCameraPermission === false) return <Text>No access to camera</Text>;
         return (
             <View style={{ flex: 1 }}>
                 <Camera
