@@ -9,7 +9,7 @@ import BottomBar from './BottomBar';
 
 const MAX_PICTURE_ERRORS = 5;
 const MILISECOND = 1000;
-const ENTITY_NOTIFICATION_INTERVAL_IN_SECONDS = 10000;
+const ENTITY_NOTIFICATION_INTERVAL_IN_SECONDS = 30;
 
 const { AbortController } = window;
 const controller = new AbortController();
@@ -81,7 +81,8 @@ class CustomCamera extends React.Component {
     };
 
     getUnseenEntities = (response) => {
-        console.log('getUnseenEntities()');
+        console.log('entitiesSet:');
+        console.log(this.entitiesSet);
         const unseenEntities = [];
         response.forEach((recognizedObject) => {
             if (!this.entitiesSet.has(recognizedObject.id)) {
@@ -132,7 +133,7 @@ class CustomCamera extends React.Component {
                     this.takePicture();
                 },
                 () => {
-                    console.log('Network error caught in promise doRecognition()');
+                    console.log('Network error/abort caught in promise doRecognition()');
                 },
             );
     };
@@ -205,15 +206,16 @@ class CustomCamera extends React.Component {
     };
 
     updateEntitiesSet(recognizedObjects) {
-        console.log('updateEntitiesSet()');
-        console.log(recognizedObjects);
         recognizedObjects.forEach((recognizedObject) => {
             const { id } = recognizedObject;
             this.entitiesSet.add(id);
-            setTimeout(() => {
-                console.log(`${id} deleted`);
-                this.entitiesSet.delete(id);
-            }, ENTITY_NOTIFICATION_INTERVAL_IN_SECONDS * MILISECOND);
+            setTimeout(
+                (entityId) => {
+                    this.entitiesSet.delete(entityId);
+                },
+                ENTITY_NOTIFICATION_INTERVAL_IN_SECONDS * MILISECOND,
+                id,
+            );
         });
     }
 
