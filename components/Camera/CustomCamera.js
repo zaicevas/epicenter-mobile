@@ -147,11 +147,11 @@ class CustomCamera extends React.Component {
         response.forEach((recognizedObject) => {
             const fullName = `${recognizedObject.firstName} ${recognizedObject.lastName}`;
             if (modelType[recognizedObject.type] === 'Car') {
-                message += `${searchReason[recognizedObject.reason]} car ${
-                    recognizedObject.message
-                } (Owner: ${fullName})\n`;
+                message += `${recognizedObject.message} (${
+                    searchReason[recognizedObject.reason]
+                }, Owner: ${fullName})\n`;
             } else if (modelType[recognizedObject.type] === 'Person') {
-                message += `${searchReason[recognizedObject.reason]} ${fullName}.\n`;
+                message += `${fullName} (${searchReason[recognizedObject.reason]})\n`;
             }
             message += `${modelType[recognizedObject.type]} was last seen at ${
                 recognizedObject.lastSeen
