@@ -1,6 +1,7 @@
 import React from 'react';
 import { withNavigationFocus } from 'react-navigation';
 import PropTypes from 'prop-types';
+import moment from 'moment';
 import CustomCamera from '../components/Camera/CustomCamera';
 
 class CameraScreen extends React.Component {
@@ -9,6 +10,8 @@ class CameraScreen extends React.Component {
     };
 
     render() {
+        const now = moment().format('YYYY-MM-DD HH:mm:ss');
+        console.log(now);
         return <CustomCamera isScreenFocused={this.props.isFocused} />;
     }
 }
