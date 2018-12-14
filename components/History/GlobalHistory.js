@@ -10,6 +10,7 @@ import {
     Thumbnail,
     Text,
 } from 'native-base';
+import { View, ActivityIndicator } from 'react-native';
 
 const getDate = timestamp => timestamp.substr(0, 10);
 const getHours = timestamp => timestamp.substr(11, 19);
@@ -50,9 +51,11 @@ const AllTimestamps = (props) => {
 class GlobalHistory extends React.Component {
     state = {
         timestampList: [],
+        isFetchingData: true,
     };
 
     componentDidMount() {
+        this.setState({ isFetchingData: true });
         fetch('https://epicentereu.azurewebsites.net/api/timestamps', {
             method: 'POST',
             headers: {
@@ -60,17 +63,45 @@ class GlobalHistory extends React.Component {
             },
         })
             .then((response) => {
+                this.setState({ isFetchingData: false });
                 if (response.status !== 200) return;
                 response.json().then((rjson) => {
                     console.log(':-))))))))))))');
                     this.setState({ timestampList: rjson });
                 });
             })
-            .catch(x => console.log(x));
+            .catch((x) => {
+                this.setState({ isFetchingData: false });
+                console.log(`${x}in globalhistory`);
+            });
+    }
+
+    componentDidUpdate(prevProps) {
+        if (!prevProps.isScreenFocused && this.props.isScreenFocused) {
+            this.componentDidMount();
+        }
     }
 
     render() {
-        return (
+        return this.state.isFetchingData ? (
+            <Container>
+                <ActivityIndicator
+                    style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-around',
+                        padding: 20,
+                        zIndex: 20,
+                    }}
+                    size="large"
+                    color="blue"
+                />
+                <Content>
+                    <List>
+                        <AllTimestamps timestampList={this.state.timestampList} />
+                    </List>
+                </Content>
+            </Container>
+        ) : (
             <Container>
                 <Content>
                     <List>
@@ -81,5 +112,33 @@ class GlobalHistory extends React.Component {
         );
     }
 }
+
+const styles = {
+    rootContainer: {
+        position: 'relative',
+        height: '100%',
+        width: '100%',
+    },
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+    },
+    horizontal: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        padding: 10,
+    },
+    helpContainer: {
+        marginTop: 5,
+        alignItems: 'center',
+    },
+    helpLink: {
+        paddingVertical: 15,
+    },
+    helpLinkText: {
+        fontSize: 14,
+        color: '#2e78b7',
+    },
+};
 
 export default GlobalHistory;
