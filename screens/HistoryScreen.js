@@ -1,14 +1,15 @@
 import React from 'react';
-import { ExpoConfigView } from '@expo/samples';
+import { withNavigationFocus } from 'react-navigation';
+import GlobalHistory from '../components/History/GlobalHistory';
 
-export default class HistoryScreen extends React.Component {
+class HistoryScreen extends React.Component {
     static navigationOptions = {
         title: 'History',
     };
 
     render() {
-        /* Go ahead and delete ExpoConfigView and replace it with your
-         * content, we just wanted to give you a quick view of your config */
-        return <ExpoConfigView />;
+        return <GlobalHistory isScreenFocused={this.props.isFocused} />;
     }
 }
+
+export default withNavigationFocus(HistoryScreen);
