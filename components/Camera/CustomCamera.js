@@ -13,6 +13,7 @@ const MILISECOND = 1000;
 const ENTITY_NOTIFICATION_INTERVAL_IN_SECONDS = 30;
 const MIN_SMILE_AMOUNT = 0.85; // [0, 1]
 const SMILE_TOAST_DURATION_IN_MS = 4000;
+const MAX_WRONG_STATUS_ERRORS = 5;
 
 const { AbortController } = window;
 const controller = new AbortController();
@@ -30,6 +31,8 @@ class CustomCamera extends React.Component {
     entitiesSet = new Set();
 
     smilesSet = new Set();
+
+    wrongStatusError = 0;
 
     static getDerivedStateFromProps(props, state) {
         if (!props.isScreenFocused) {
@@ -76,8 +79,6 @@ class CustomCamera extends React.Component {
     };
 
     getUnseenEntities = (response) => {
-        console.log('entitiesSet:');
-        console.log(this.entitiesSet);
         const unseenEntities = [];
         response.forEach((recognizedObject) => {
             if (!this.entitiesSet.has(recognizedObject.id)) {
@@ -90,8 +91,6 @@ class CustomCamera extends React.Component {
 
     isSomeoneUniqueSmiling = (response) => {
         const uniqueSmileIds = [];
-        console.log('smilesSet:');
-        console.log(this.smilesSet);
         response.forEach((recognizedObject) => {
             const uniqueAndSmiling = !this.smilesSet.has(recognizedObject.id)
                 && recognizedObject.smile > MIN_SMILE_AMOUNT;
@@ -110,7 +109,6 @@ class CustomCamera extends React.Component {
     };
 
     doRecognition = (requestBody) => {
-        console.log('DORECOGNITION');
         fetch('https://epicentereu.azurewebsites.net/api', {
             method: 'POST',
             signal,
@@ -120,13 +118,20 @@ class CustomCamera extends React.Component {
             body: JSON.stringify(requestBody),
         })
             .then(
-                response => new Promise((resolve, reject) => {
-                    console.log(response);
+                response => new Promise((resolve) => {
                     if (response.status !== 200) {
-                        this.setState({ isFilming: false });
-                        this.showErrorPopup(response.status);
-                        reject(new Error(response));
-                    } else resolve(response.json());
+                        this.wrongStatusError += 1;
+                        if (this.wrongStatusError > MAX_WRONG_STATUS_ERRORS) {
+                            this.setState({ isFilming: false });
+                            this.showErrorPopup('Wrong picture output.');
+                            this.wrongStatusError = 0;
+                        } else {
+                            this.takePicture();
+                        }
+                    } else {
+                        this.wrongStatusError = 0;
+                        resolve(response.json());
+                    }
                 }),
                 ex => new Promise((resolve, reject) => {
                     console.log(
