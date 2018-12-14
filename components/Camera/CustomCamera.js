@@ -3,14 +3,16 @@
 import React from 'react';
 import NotificationPopup from 'react-native-push-notification-popup';
 import 'abortcontroller-polyfill';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { Camera, Permissions } from 'expo';
+import { Text, Toast } from 'native-base';
 import BottomBar from './BottomBar';
 
 const MAX_PICTURE_ERRORS = 5;
 const MILISECOND = 1000;
 const ENTITY_NOTIFICATION_INTERVAL_IN_SECONDS = 30;
 const MIN_SMILE_AMOUNT = 0.85; // [0, 1]
+const SMILE_TOAST_DURATION_IN_MS = 4000;
 
 const { AbortController } = window;
 const controller = new AbortController();
@@ -82,7 +84,7 @@ class CustomCamera extends React.Component {
                 unseenEntities.push(recognizedObject);
             }
         });
-        this.updateEntitiesSet(unseenEntities, this.entitiesSet);
+        if (unseenEntities.length > 0) this.updateEntitiesSet(unseenEntities, this.entitiesSet);
         return unseenEntities;
     };
 
@@ -95,7 +97,15 @@ class CustomCamera extends React.Component {
                 && recognizedObject.smile > MIN_SMILE_AMOUNT;
             if (uniqueAndSmiling) uniqueSmileIds.push(recognizedObject);
         });
-        this.updateEntitiesSet(uniqueSmileIds, this.smilesSet);
+        if (uniqueSmileIds.length > 0) {
+            this.updateEntitiesSet(uniqueSmileIds, this.smilesSet);
+            Toast.show({
+                text: 'Subject is smiling. He might be a maniac',
+                type: 'warning',
+                position: 'bottom',
+                duration: SMILE_TOAST_DURATION_IN_MS,
+            });
+        }
     };
 
     doRecognition = (requestBody) => {
