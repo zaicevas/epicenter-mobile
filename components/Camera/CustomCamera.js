@@ -8,7 +8,7 @@ import { Camera, Permissions } from 'expo';
 import { Text, Toast } from 'native-base';
 import BottomBar from './BottomBar';
 
-const MAX_PICTURE_ERRORS = 5;
+const MAX_PICTURE_ERRORS = 10;
 const MILISECOND = 1000;
 const ENTITY_NOTIFICATION_INTERVAL_IN_SECONDS = 30;
 const MIN_SMILE_AMOUNT = 0.85; // [0, 1]

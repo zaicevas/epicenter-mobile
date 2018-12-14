@@ -7,6 +7,7 @@ import {
     Text,
     TouchableOpacity,
     View,
+    RefreshControl
 } from 'react-native';
 import { WebBrowser } from 'expo';
 
