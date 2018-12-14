@@ -124,6 +124,7 @@ class GlobalHistory extends React.Component {
             <RefreshControl
               refreshing={this.state.refreshing}
               onRefresh={this._onRefresh}
+              tintColor="blue"
             />
           }
         >
