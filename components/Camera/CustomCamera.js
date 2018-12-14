@@ -101,7 +101,7 @@ class CustomCamera extends React.Component {
             this.updateEntitiesSet(uniqueSmileIds, this.smilesSet);
             Toast.show({
                 text: 'Subject is smiling. He might be a maniac',
-                textStyle: { color: "yellow" },
+                textStyle: { color: 'yellow' },
                 type: 'default',
                 position: 'bottom',
                 duration: SMILE_TOAST_DURATION_IN_MS,
@@ -110,6 +110,7 @@ class CustomCamera extends React.Component {
     };
 
     doRecognition = (requestBody) => {
+        console.log('DORECOGNITION');
         fetch('https://epicentereu.azurewebsites.net/api', {
             method: 'POST',
             signal,
@@ -122,14 +123,18 @@ class CustomCamera extends React.Component {
                 response => new Promise((resolve, reject) => {
                     console.log(response);
                     if (response.status !== 200) {
-                        reject(new Error('Response status is not 200'));
+                        this.setState({ isFilming: false });
+                        this.showErrorPopup(response.status);
+                        reject(new Error(response));
                     } else resolve(response.json());
                 }),
                 ex => new Promise((resolve, reject) => {
-                    console.log('Catch in doRecognition');
+                    console.log(
+                        'Our api call failed or abort controller. Catch in doRecognition',
+                    );
                     if (ex.name !== 'AbortError') this.showErrorPopup(String(ex));
                     this.setState({ isFilming: false });
-                    reject();
+                    reject(ex);
                 }),
             )
             .then(
@@ -146,8 +151,10 @@ class CustomCamera extends React.Component {
                     if (unseenEntities.length > 0) this.showNotification(unseenEntities);
                     this.takePicture();
                 },
-                () => {
+                (err) => {
+                    this.setState({ isFilming: false });
                     console.log('Network error/abort caught in promise doRecognition()');
+                    console.log(err);
                 },
             );
     };
