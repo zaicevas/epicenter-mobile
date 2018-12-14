@@ -2,7 +2,7 @@
   "expo": {
     "name": "Epicenter",
     "description": "Track your friends and foes.",
-    "slug": "press-the-enter",
+    "slug": "epicenter",
     "privacy": "public",
     "sdkVersion": "31.0.0",
     "platforms": [
