@@ -19,6 +19,11 @@ const controller = new AbortController();
 const { signal } = controller;
 
 class CustomCamera extends React.Component {
+    constructor(props) {
+        super(props);
+        this.takePicture = this.takePicture.bind(this);
+    }
+
     state = {
         hasCameraPermission: null,
         type: Camera.Constants.Type.back,
@@ -56,28 +61,32 @@ class CustomCamera extends React.Component {
     }
 
     takePicture = () => {
-        console.log('takePicture()');
-        this.camera
-            .takePictureAsync({
-                base64: true,
-                quality: 0,
-                onPictureSaved: picture => this.processPicture(picture),
-            })
-            .catch((error) => {
-                this.pictureTakeError += 1;
-                // TODO: only show error popup when a lot of takePicture() end up there
-                if (this.pictureTakeError >= MAX_PICTURE_ERRORS) {
-                    this.showErrorPopup(String(error));
-                    this.setState({ isFilming: false });
-                } else if (this.state.isFilming) this.takePicture();
-            });
-        // eslint-disable-next-line react/no-unused-state
-        this.setState({ foo: Math.random() }); // workaround for react-native bug
+        this.camera.takePictureAsync({
+            base64: true,
+            quality: 0,
+            onPictureSaved: picture => this.processPicture(picture),
+        });
+    };
+
+    doSmth = () => null;
+
+    processPicture = (picture) => {
+        this.pictureTakeError = 0;
+        const requestBody = this.getRequestBody(picture.base64);
+        fetch('https://epicentereu.azurewebsites.net/api', {
+            method: 'POST',
+            signal,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+        }).then((response) => {
+            this.doSmth();
+            this.takePicture();
+        });
     };
 
     getUnseenEntities = (response) => {
-        console.log('entitiesSet:');
-        console.log(this.entitiesSet);
         const unseenEntities = [];
         response.forEach((recognizedObject) => {
             if (!this.entitiesSet.has(recognizedObject.id)) {
@@ -90,8 +99,6 @@ class CustomCamera extends React.Component {
 
     isSomeoneUniqueSmiling = (response) => {
         const uniqueSmileIds = [];
-        console.log('smilesSet:');
-        console.log(this.smilesSet);
         response.forEach((recognizedObject) => {
             const uniqueAndSmiling = !this.smilesSet.has(recognizedObject.id)
                 && recognizedObject.smile > MIN_SMILE_AMOUNT;
@@ -110,7 +117,7 @@ class CustomCamera extends React.Component {
     };
 
     doRecognition = (requestBody) => {
-        console.log('DORECOGNITION');
+        console.log('dorecognition');
         fetch('https://epicentereu.azurewebsites.net/api', {
             method: 'POST',
             signal,
@@ -118,45 +125,10 @@ class CustomCamera extends React.Component {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(requestBody),
-        })
-            .then(
-                response => new Promise((resolve, reject) => {
-                    console.log(response);
-                    if (response.status !== 200) {
-                        this.setState({ isFilming: false });
-                        this.showErrorPopup(response.status);
-                        reject(new Error(response));
-                    } else resolve(response.json());
-                }),
-                ex => new Promise((resolve, reject) => {
-                    console.log(
-                        'Our api call failed or abort controller. Catch in doRecognition',
-                    );
-                    if (ex.name !== 'AbortError') this.showErrorPopup(String(ex));
-                    this.setState({ isFilming: false });
-                    reject(ex);
-                }),
-            )
-            .then(
-                (response) => {
-                    console.log('Successful promise chain in doRecognition()');
-                    if (!this.state.isFilming) {
-                        // if user switched tab/pressed on filming,
-                        // we don't show the notification any more
-                        return;
-                    }
-                    const unseenEntities = this.getUnseenEntities(response);
-                    const unseenSmiles = this.isSomeoneUniqueSmiling(response);
-
-                    if (unseenEntities.length > 0) this.showNotification(unseenEntities);
-                    this.takePicture();
-                },
-                (err) => {
-                    this.setState({ isFilming: false });
-                    console.log('Network error/abort caught in promise doRecognition()');
-                    console.log(err);
-                },
-            );
+        }).then((response) => {
+            console.log('WTFNIGGA');
+            this.takePicture();
+        });
     };
 
     getRequestBody = base64 => ({
@@ -166,12 +138,6 @@ class CustomCamera extends React.Component {
         findPlate: true,
         findFace: true,
     });
-
-    processPicture = (picture) => {
-        this.pictureTakeError = 0;
-        const requestBody = this.getRequestBody(picture.base64);
-        this.doRecognition(requestBody);
-    };
 
     showNotification = (response) => {
         if (!response) return null;
