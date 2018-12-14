@@ -104,12 +104,6 @@ class GlobalHistory extends React.Component {
       });
   };
 
-  componentDidUpdate(prevProps) {
-    if (!prevProps.isScreenFocused && this.props.isScreenFocused) {
-      this.componentDidMount();
-    }
-  }
-
   render() {
     return this.state.isFetchingData ? (
       <View style={[styles.container, styles.horizontal]}>
@@ -122,7 +116,6 @@ class GlobalHistory extends React.Component {
           size="large"
           color="blue"
         />
-        <NewReceiptIcon navigation={this.props.navigation} />
       </View>
     ) : (
       <Container>
