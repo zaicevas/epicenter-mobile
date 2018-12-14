@@ -101,7 +101,8 @@ class CustomCamera extends React.Component {
             this.updateEntitiesSet(uniqueSmileIds, this.smilesSet);
             Toast.show({
                 text: 'Subject is smiling. He might be a maniac',
-                type: 'warning',
+                textStyle: { color: "yellow" },
+                type: 'default',
                 position: 'bottom',
                 duration: SMILE_TOAST_DURATION_IN_MS,
             });
