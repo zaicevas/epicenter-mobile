@@ -10,6 +10,7 @@ import BottomBar from './BottomBar';
 const MAX_PICTURE_ERRORS = 5;
 const MILISECOND = 1000;
 const ENTITY_NOTIFICATION_INTERVAL_IN_SECONDS = 30;
+const MIN_SMILE_AMOUNT = 0.85; // [0, 1]
 
 const { AbortController } = window;
 const controller = new AbortController();
@@ -25,6 +26,8 @@ class CustomCamera extends React.Component {
     pictureTakeError = 0;
 
     entitiesSet = new Set();
+
+    smilesSet = new Set();
 
     static getDerivedStateFromProps(props, state) {
         if (!props.isScreenFocused) {
@@ -79,8 +82,20 @@ class CustomCamera extends React.Component {
                 unseenEntities.push(recognizedObject);
             }
         });
-        this.updateEntitiesSet(unseenEntities);
+        this.updateEntitiesSet(unseenEntities, this.entitiesSet);
         return unseenEntities;
+    };
+
+    isSomeoneUniqueSmiling = (response) => {
+        const uniqueSmileIds = [];
+        console.log('smilesSet:');
+        console.log(this.smilesSet);
+        response.forEach((recognizedObject) => {
+            const uniqueAndSmiling = !this.smilesSet.has(recognizedObject.id)
+                && recognizedObject.smile > MIN_SMILE_AMOUNT;
+            if (uniqueAndSmiling) uniqueSmileIds.push(recognizedObject);
+        });
+        this.updateEntitiesSet(uniqueSmileIds, this.smilesSet);
     };
 
     doRecognition = (requestBody) => {
@@ -115,6 +130,7 @@ class CustomCamera extends React.Component {
                         return;
                     }
                     const unseenEntities = this.getUnseenEntities(response);
+                    const unseenSmiles = this.isSomeoneUniqueSmiling(response);
 
                     if (unseenEntities.length > 0) this.showNotification(unseenEntities);
                     this.takePicture();
@@ -182,13 +198,13 @@ class CustomCamera extends React.Component {
         this.setState({ isFilming: !isFilming });
     };
 
-    updateEntitiesSet(recognizedObjects) {
+    updateEntitiesSet(recognizedObjects, set) {
         recognizedObjects.forEach((recognizedObject) => {
             const { id } = recognizedObject;
-            this.entitiesSet.add(id);
+            set.add(id);
             setTimeout(
                 (entityId) => {
-                    this.entitiesSet.delete(entityId);
+                    set.delete(entityId);
                 },
                 ENTITY_NOTIFICATION_INTERVAL_IN_SECONDS * MILISECOND,
                 id,
