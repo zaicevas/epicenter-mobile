@@ -11,6 +11,9 @@ import {
     Text,
 } from 'native-base';
 
+const getDate = timestamp => timestamp.substr(0, 10);
+const getHours = timestamp => timestamp.substr(11, 19);
+
 const SingleTimestamp = (props) => {
     const { timestamp } = props;
     const searchReason = ['Not searched', 'Missing', 'Criminal', 'Other'];
@@ -23,11 +26,15 @@ const SingleTimestamp = (props) => {
                 />
             </Left>
             <Body>
-                <Text>{timestamp.missingModel.firstName + timestamp.missingModel.lastName}</Text>
+                <Text>
+                    {`${timestamp.missingModel.firstName} ${timestamp.missingModel.lastName}`}
+                </Text>
                 <Text note>{searchReason[timestamp.missingModel.reason]}</Text>
             </Body>
             <Right>
-                <Text note>{'2018-12-12\u000A15:34:53'}</Text>
+                <Text note>
+                    {`${getDate(timestamp.dateAndTime)}\u000A${getHours(timestamp.dateAndTime)}`}
+                </Text>
             </Right>
         </ListItem>
     );
@@ -46,7 +53,7 @@ class GlobalHistory extends React.Component {
     };
 
     componentDidMount() {
-        fetch('https://epicentereu.azurewebsites.net/api/cars/timestamps', {
+        fetch('https://epicentereu.azurewebsites.net/api/timestamps', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
