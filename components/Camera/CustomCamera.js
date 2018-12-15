@@ -3,11 +3,10 @@
 import React from 'react';
 import NotificationPopup from 'react-native-push-notification-popup';
 import 'abortcontroller-polyfill';
-import { View } from 'react-native';
+import { View, TouchableOpacity, Animated } from 'react-native';
 import { Camera, Permissions } from 'expo';
-import { Text, Toast } from 'native-base';
+import { Text, Toast, } from 'native-base';
 import BottomBar from './BottomBar';
-import Workaround from '../workaround/react-native-push-notification-popup/src/views/DefaultPopup';
 
 const MAX_PICTURE_ERRORS = 20;
 const MILISECOND = 1000;
@@ -19,6 +18,29 @@ const MAX_WRONG_STATUS_ERRORS = 5;
 const { AbortController } = window;
 const controller = new AbortController();
 const { signal } = controller;
+
+class Workaround extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            smth: false
+        }
+    }
+    doSmth = () => {
+        const prev = this.state.smth;
+        this.setState({smth: !prev});
+        console.log("HAH");
+    }
+     render() {
+         if (this.state.smth)
+            return (
+                <Animated.View>
+             <TouchableOpacity onPress={() => this.doSmth()} /></Animated.View>);
+             else {
+                 return (<TouchableOpacity onPress={() => this.doSmth()} />);
+             }
+     }
+}
 
 class CustomCamera extends React.Component {
     state = {
@@ -77,13 +99,7 @@ class CustomCamera extends React.Component {
             });
         // eslint-disable-next-line react/no-unused-state
         this.setState({ foo: Math.random() }); // workaround for react-native bug
-        Toast.show({
-            text: 'Subject is smiling. He might be a maniac',
-            textStyle: { color: 'yellow' },
-            type: 'default',
-            position: 'top',
-            duration: 1,
-        });
+        setTimeout(() => this.workaround.doSmth(), 5);
     };
 
     getUnseenEntities = (response) => {
@@ -272,7 +288,7 @@ class CustomCamera extends React.Component {
                     </View>
                 </Camera>
                 <NotificationPopup ref={ref => (this.popup = ref)} />
-                <Workaround ref={ref => (this.workaround = ref)} />
+                    <Workaround ref={ref => (this.workaround = ref)} />
             </View>
         );
     }
