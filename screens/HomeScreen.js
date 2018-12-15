@@ -15,8 +15,9 @@ import { WebBrowser } from 'expo';
 import { MonoText } from '../components/StyledText';
 
 const INTRO_TEXT = "Make the world a better place by finding missing people, cars and criminals!";
+const ALERT_TITLE = "Learn more";
 const ALERT_TEXT = `Scan your surroundings and help us find missing people, cars and criminals.
-Police track all findings and are ready to take action!`;
+Police track all findings and are ready to take action! `;
 
 export default class HomeScreen extends React.Component {
     static navigationOptions = {
@@ -76,7 +77,7 @@ export default class HomeScreen extends React.Component {
     }
 
     _handleLearnMorePress = () => {
-        Alert.alert(`${ALERT_TEXT}`);
+        Alert.alert(ALERT_TITLE, ALERT_TEXT);
     };
 
     _handleHelpPress = () => {
