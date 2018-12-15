@@ -140,7 +140,9 @@ class GlobalHistory extends React.Component {
             />
           }
         >
-          <List>
+          <List
+          leftOpenValue={75}
+          rightOpenValue={-75}>
             <AllTimestamps timestampList={this.state.timestampList} />
           </List>
         </Content>
