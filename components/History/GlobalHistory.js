@@ -24,14 +24,14 @@ const SingleTimestamp = props => {
         <Thumbnail
           small
           source={{
-            uri: `data:image/png;base64, ${timestamp.missingModel.baseImage}`
+            uri: `data:image/png;base64, ${timestamp.baseImage}`
           }}
         />
       </Left>
       <Body>
         <Text>
-          {`${timestamp.missingModel.firstName} ${timestamp.missingModel
-            .lastName}`}
+          {timestamp.missingModel.type === 0 ? `${timestamp.missingModel.firstName} ${timestamp.missingModel
+            .lastName}` : `${timestamp.missingModel.message}`}
         </Text>
         <Text note>{searchReason[timestamp.missingModel.reason]}</Text>
       </Body>
@@ -60,29 +60,66 @@ class GlobalHistory extends React.Component {
     refreshing: false
   };
 
-  componentDidMount() {
-    this.setState({ isFetchingData: true });
-    fetch("https://epicentereu.azurewebsites.net/api/timestamps", {
+  allTimestampsRequest = fetch(
+    "https://epicentereu.azurewebsites.net/api/timestamps",
+    {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       }
-    })
-      .then(response => {
-        this.setState({ isFetchingData: false });
-        if (response.status !== 200) return;
-        response.json().then(rjson => {
-          console.log(":-))))))))))))");
-          this.setState({ timestampList: rjson });
-        });
-      })
-      .catch(x => {
-        this.setState({ isFetchingData: false });
-        console.log(`${x} in globalhistory`);
-      });
+    }
+  ).then(response => {
+    if (response.status === 200) return Promise.resolve(response.json());
+    return Promise.reject(response.json());
+  });
+
+  allBaseImagesRequest = fetch(
+    "https://epicentereu.azurewebsites.net/api/missingmodels/baseimages",
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }
+  ).then(response => {
+    if (response.status === 200) return Promise.resolve(response.json());
+    return Promise.reject(response.json());
+  });
+
+  componentDidMount() {
+    this.setState({ isFetchingData: true });
+    Promise.all([
+      this.allTimestampsRequest,
+      this.allBaseImagesRequest
+    ]).then(responseBody => {
+      this.setState({ isFetchingData: false });
+      const mapper = {};
+      console.log(responseBody[0][0].missingModel);
+      responseBody[1].forEach(
+        missingModel => (mapper[missingModel.id] = missingModel.baseImage)
+      );
+      const timestampList = responseBody[0].map(timestamp => ({
+        ...timestamp,
+        baseImage: mapper[timestamp.missingModel.id]
+      }));
+      this.setState({ timestampList: timestampList });
+    });
+    // this.allTimestampsRequest
+    //   .then(response => {
+    //     this.setState({ isFetchingData: false });
+    //     if (response.status !== 200) return;
+    //     response.json().then(rjson => {
+    //       this.setState({ timestampList: rjson });
+    //     });
+    //   })
+    //   .catch(x => {
+    //     this.setState({ isFetchingData: false });
+    //     console.log(`${x} in globalhistory`);
+    //   });
   }
 
   _onRefresh = () => {
+    console.log("refreshing");
     this.setState({ refreshing: true });
     fetch("https://epicentereu.azurewebsites.net/api/timestamps", {
       method: "POST",
@@ -91,10 +128,10 @@ class GlobalHistory extends React.Component {
       }
     })
       .then(response => {
+        console.log("stopped refreshing");
         this.setState({ refreshing: false });
         if (response.status !== 200) return;
         response.json().then(rjson => {
-          console.log(":-))))))))))))");
           this.setState({ timestampList: rjson });
         });
       })

@@ -29,7 +29,6 @@ class Workaround extends React.Component {
     doSmth = () => {
         const prev = this.state.smth;
         this.setState({smth: !prev});
-        console.log("HAH");
     }
      render() {
          if (this.state.smth)
@@ -99,7 +98,7 @@ class CustomCamera extends React.Component {
             });
         // eslint-disable-next-line react/no-unused-state
         this.setState({ foo: Math.random() }); // workaround for react-native bug
-        setTimeout(() => this.workaround.doSmth(), 5);
+        setTimeout(() => this.workaround.doSmth(), 5);  // workaround for publishing
     };
 
     getUnseenEntities = (response) => {
