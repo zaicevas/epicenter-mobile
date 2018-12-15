@@ -63,7 +63,7 @@ export default class HomeScreen extends React.Component {
 
         return (
             <Text style={styles.developmentModeText}>
-                Make the world a better place by finding missing people, criminals and cars!
+                Make the world a better place by finding missing people, cars and criminals!
                 {' '}
                 {learnMoreButton}
             </Text>

@@ -8,7 +8,7 @@ import {
   Body,
   Right,
   Thumbnail,
-  Text
+  Text,
 } from "native-base";
 import { View, ActivityIndicator, RefreshControl } from "react-native";
 
@@ -30,8 +30,10 @@ const SingleTimestamp = props => {
       </Left>
       <Body>
         <Text>
-          {timestamp.missingModel.type === 0 ? `${timestamp.missingModel.firstName} ${timestamp.missingModel
-            .lastName}` : `${timestamp.missingModel.message}`}
+          {timestamp.missingModel.type === 0
+            ? `${timestamp.missingModel.firstName} ${timestamp.missingModel
+                .lastName}`
+            : `${timestamp.missingModel.message}`}
         </Text>
         <Text note>{searchReason[timestamp.missingModel.reason]}</Text>
       </Body>
@@ -86,8 +88,7 @@ class GlobalHistory extends React.Component {
     return Promise.reject(response.json());
   });
 
-  componentDidMount() {
-    this.setState({ isFetchingData: true });
+  getDataFromApi = () =>
     Promise.all([
       this.allTimestampsRequest,
       this.allBaseImagesRequest
@@ -103,29 +104,16 @@ class GlobalHistory extends React.Component {
       }));
       this.setState({ timestampList: timestampList });
     });
+
+  componentDidMount() {
+    this.setState({ isFetchingData: true });
+    this.getDataFromApi();
   }
 
   _onRefresh = () => {
     console.log("refreshing");
     this.setState({ refreshing: true });
-    fetch("https://epicentereu.azurewebsites.net/api/timestamps", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
-      .then(response => {
-        console.log("stopped refreshing");
-        this.setState({ refreshing: false });
-        if (response.status !== 200) return;
-        response.json().then(rjson => {
-          this.setState({ timestampList: rjson });
-        });
-      })
-      .catch(x => {
-        this.setState({ refreshing: false });
-        console.log(`${x} in globalhistory`);
-      });
+    this.getDataFromApi().finally(() => this.setState({refreshing: false}));
   };
 
   render() {
