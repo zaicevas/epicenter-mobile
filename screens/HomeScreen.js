@@ -9,7 +9,6 @@ import {
     View,
     RefreshControl,
     Alert,
-    AsyncStorage
 } from 'react-native';
 import { WebBrowser } from 'expo';
 
