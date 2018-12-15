@@ -94,7 +94,6 @@ class GlobalHistory extends React.Component {
     ]).then(responseBody => {
       this.setState({ isFetchingData: false });
       const mapper = {};
-      console.log(responseBody[0][0].missingModel);
       responseBody[1].forEach(
         missingModel => (mapper[missingModel.id] = missingModel.baseImage)
       );
