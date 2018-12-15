@@ -7,11 +7,16 @@ import {
     Text,
     TouchableOpacity,
     View,
-    RefreshControl
+    RefreshControl,
+    Alert
 } from 'react-native';
 import { WebBrowser } from 'expo';
 
 import { MonoText } from '../components/StyledText';
+
+const INTRO_TEXT = "Make the world a better place by finding missing people, cars and criminals!";
+const ALERT_TEXT = `Scan your surroundings and help us find missing people, cars and criminals.
+Police track all findings and are ready to take action!`;
 
 export default class HomeScreen extends React.Component {
     static navigationOptions = {
@@ -63,7 +68,7 @@ export default class HomeScreen extends React.Component {
 
         return (
             <Text style={styles.developmentModeText}>
-                Make the world a better place by finding missing people, cars and criminals!
+                {`${INTRO_TEXT}`}
                 {' '}
                 {learnMoreButton}
             </Text>
@@ -71,7 +76,7 @@ export default class HomeScreen extends React.Component {
     }
 
     _handleLearnMorePress = () => {
-        WebBrowser.openBrowserAsync('https://github.com/tozaicevas/epicenter-mobile');
+        Alert.alert(`${ALERT_TEXT}`);
     };
 
     _handleHelpPress = () => {
