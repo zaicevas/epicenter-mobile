@@ -103,18 +103,6 @@ class GlobalHistory extends React.Component {
       }));
       this.setState({ timestampList: timestampList });
     });
-    // this.allTimestampsRequest
-    //   .then(response => {
-    //     this.setState({ isFetchingData: false });
-    //     if (response.status !== 200) return;
-    //     response.json().then(rjson => {
-    //       this.setState({ timestampList: rjson });
-    //     });
-    //   })
-    //   .catch(x => {
-    //     this.setState({ isFetchingData: false });
-    //     console.log(`${x} in globalhistory`);
-    //   });
   }
 
   _onRefresh = () => {

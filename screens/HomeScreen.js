@@ -63,7 +63,7 @@ export default class HomeScreen extends React.Component {
 
         return (
             <Text style={styles.developmentModeText}>
-                This application is fully open-source. You're welcome to improve it!
+                Make the world a better place by finding missing people, criminals and cars!
                 {' '}
                 {learnMoreButton}
             </Text>
