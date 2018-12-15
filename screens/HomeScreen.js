@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
         color: 'rgba(96,100,109, 1)',
         lineHeight: 24,
         textAlign: 'center',
-        marginTop: 94,
+        marginTop: '33%',
     },
     tabBarInfoContainer: {
         position: 'absolute',
