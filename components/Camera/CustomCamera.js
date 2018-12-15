@@ -1,5 +1,6 @@
 /* eslint-disable global-require */
 /* eslint-disable linebreak-style */
+/* eslint-disable react/no-multi-comp */
 import React from 'react';
 import NotificationPopup from 'react-native-push-notification-popup';
 import 'abortcontroller-polyfill';
@@ -75,7 +76,8 @@ class CustomCamera extends React.Component {
                 } else if (this.state.isFilming) this.takePicture();
             });
         // eslint-disable-next-line react/no-unused-state
-        this.setState({ foo: Math.random() }); // workaround for react-native bug
+        this.setState({ workaround: true }); // workaround for react-native bug
+        this.popup.show();
     };
 
     getUnseenEntities = (response) => {
