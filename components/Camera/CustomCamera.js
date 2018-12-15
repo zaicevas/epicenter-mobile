@@ -4,7 +4,7 @@ import React from "react";
 import NotificationPopup from "react-native-push-notification-popup";
 import "abortcontroller-polyfill";
 import { View, TouchableOpacity, Animated, AsyncStorage } from "react-native";
-import { Camera, Permissions } from "expo";
+import { Camera, Permissions, Location } from "expo";
 import { Text, Toast } from "native-base";
 import BottomBar from "./BottomBar";
 
@@ -47,6 +47,7 @@ class Workaround extends React.Component {
 class CustomCamera extends React.Component {
   state = {
     hasCameraPermission: null,
+    hasLocationPermission: null,
     type: Camera.Constants.Type.back,
     isFilming: false
   };
@@ -68,11 +69,23 @@ class CustomCamera extends React.Component {
     return state;
   }
 
-  async componentDidMount() {
+  getCameraPermissionsAsync = async () => {
     const { permissions } = await Permissions.askAsync(Permissions.CAMERA);
     this.setState({
       hasCameraPermission: permissions[Permissions.CAMERA].status === "granted"
     });
+  };
+  getLocationPermissionsAsync = async () => {
+    const { permissions } = await Permissions.askAsync(Permissions.LOCATION);
+    this.setState({
+      hasLocationPermission:
+        permissions[Permissions.LOCATION].status === "granted"
+    });
+  };
+
+  async componentDidMount() {
+    this.getCameraPermissionsAsync();
+    this.getLocationPermissionsAsync();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -197,17 +210,18 @@ class CustomCamera extends React.Component {
       );
   };
 
-  getRequestBody = base64 => ({
-    latitude: 0.0,
-    longitude: 0.0,
+  getRequestBody = (base64, location) => ({
+    latitude: location.latitude,
+    longitude: location.longitude,
     imageBase64: base64,
     findPlate: true,
     findFace: true
   });
 
-  processPicture = picture => {
+  processPicture = async (picture) => {
     this.pictureTakeError = 0;
-    const requestBody = this.getRequestBody(picture.base64);
+    const location = await Location.getCurrentPositionAsync({});
+    const requestBody = this.getRequestBody(picture.base64, location);
     this.doRecognition(requestBody);
   };
 
