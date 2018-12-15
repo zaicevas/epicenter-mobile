@@ -8,7 +8,8 @@ import {
     TouchableOpacity,
     View,
     RefreshControl,
-    Alert
+    Alert,
+    AsyncStorage
 } from 'react-native';
 import { WebBrowser } from 'expo';
 
@@ -81,7 +82,7 @@ export default class HomeScreen extends React.Component {
     };
 
     _handleHelpPress = () => {
-        WebBrowser.openBrowserAsync('https://google.lt');
+        WebBrowser.openBrowserAsync('https://github.com/tozaicevas/epicenter');
     };
 }
 
