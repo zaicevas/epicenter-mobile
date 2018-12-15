@@ -7,6 +7,7 @@ import { View } from 'react-native';
 import { Camera, Permissions } from 'expo';
 import { Text, Toast } from 'native-base';
 import BottomBar from './BottomBar';
+import Workaround from '../workaround/react-native-push-notification-popup/src/views/DefaultPopup';
 
 const MAX_PICTURE_ERRORS = 20;
 const MILISECOND = 1000;
@@ -76,6 +77,13 @@ class CustomCamera extends React.Component {
             });
         // eslint-disable-next-line react/no-unused-state
         this.setState({ foo: Math.random() }); // workaround for react-native bug
+        Toast.show({
+            text: 'Subject is smiling. He might be a maniac',
+            textStyle: { color: 'yellow' },
+            type: 'default',
+            position: 'top',
+            duration: 1,
+        });
     };
 
     getUnseenEntities = (response) => {
@@ -264,6 +272,7 @@ class CustomCamera extends React.Component {
                     </View>
                 </Camera>
                 <NotificationPopup ref={ref => (this.popup = ref)} />
+                <Workaround ref={ref => (this.workaround = ref)} />
             </View>
         );
     }
