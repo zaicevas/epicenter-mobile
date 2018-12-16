@@ -3,23 +3,45 @@ import { withNavigationFocus } from "react-navigation";
 import GlobalHistory from "../components/History/GlobalHistory";
 import { Button, Text, Body, Container, Content, Segment } from "native-base";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Dimensions, TouchableOpacity, AsyncStorage } from "react-native";
+import {
+  Dimensions,
+  TouchableOpacity,
+  AsyncStorage,
+  Alert
+} from "react-native";
 import { LOCAL_STORAGE_TIMESTAMPS_KEY } from "../constants/Recognition";
 
 class HistoryScreen extends React.Component {
-    state = {clearLocalHistory: null};
+  state = { clearLocalHistory: null };
   static navigationOptions = ({ navigation }) => {
     const { params = {} } = navigation.state;
     return {
       title: "History",
       headerRight: (
         <TouchableOpacity
-          onPress={async () => {
-            await AsyncStorage.setItem(
-              LOCAL_STORAGE_TIMESTAMPS_KEY,
-              JSON.stringify([])
+          onPress={() => {
+            Alert.alert(
+              "Clear local history",
+              "You cannot undo this action!",
+              [
+                {
+                  text: "Cancel",
+                  style: "cancel"
+                },
+                {
+                  text: "Clear",
+                  style: "destructive",
+                  onPress: () => {
+                    params.handleClear();
+                    AsyncStorage.setItem(
+                      LOCAL_STORAGE_TIMESTAMPS_KEY,
+                      JSON.stringify([])
+                    );
+                  }
+                }
+              ],
+              { cancelable: false }
             );
-            params.handleClear();
           }}
           style={{ alignSelf: "center" }}
         >
@@ -34,20 +56,20 @@ class HistoryScreen extends React.Component {
   };
 
   handleClear = () => {
-      this.setState({clearLocalHistory: this.clearLocalHistorySuccess});
-  }
+    this.setState({ clearLocalHistory: this.clearLocalHistorySuccess });
+  };
 
   clearLocalHistorySuccess = () => {
-      this.setState({clearLocalHistory: null});
-  }
+    this.setState({ clearLocalHistory: null });
+  };
 
   componentDidMount() {
     this.props.navigation.setParams({ handleClear: this.handleClear });
   }
 
   render() {
-      console.log("in historyscreen");
-      console.log(this.state.clearLocalHistory);
+    console.log("in historyscreen");
+    console.log(this.state.clearLocalHistory);
     return <GlobalHistory clearLocalHistory={this.state.clearLocalHistory} />;
   }
 }
