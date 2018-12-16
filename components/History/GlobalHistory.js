@@ -10,7 +10,10 @@ import {
   Body,
   Right,
   Thumbnail,
-  Text
+  Text,
+  Segment,
+  Header,
+  Title
 } from "native-base";
 import {
   Alert,
@@ -73,7 +76,8 @@ class GlobalHistory extends React.Component {
   state = {
     timestampList: [],
     isFetchingData: true,
-    refreshing: false
+    refreshing: false,
+    mode: 'monthly', count: 0
   };
 
   dataSource = new ListView.DataSource({
@@ -180,42 +184,19 @@ class GlobalHistory extends React.Component {
   }
 
   render() {
-    return this.state.isFetchingData ? (
-      <View style={[styles.container, styles.horizontal]}>
-        <ActivityIndicator
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-around",
-            padding: 20
-          }}
-          size="large"
-          color="blue"
-        />
-      </View>
-    ) : (
+    return (
       <Container>
-        <Content
-          refreshControl={
-            <RefreshControl
-              refreshing={this.state.refreshing}
-              onRefresh={this._onRefresh}
-              tintColor="blue"
-            />
-          }
-        >
-          <List
-            disableLeftSwipe
-            leftOpenValue={50}
-            dataSource={this.dataSource.cloneWithRows(this.state.timestampList)}
-            renderRow={data => <SingleTimestamp timestamp={data} />}
-            renderLeftHiddenRow={(data, secId, rowId, rowMap) => (
-              <Button full onPress={() => {
-                this.printInfo(data, () => this.closeRow(secId, rowId, rowMap));
-                }}>
-                <Icon active name="information-circle" />
-              </Button>
-            )}
-          />
+      <Body >
+            <Content>
+              <Segment >
+                <Button style={{ borderRightWidth: 0 }} active={this.state.mode === 'People'} onPress={() => this.setState({ mode: 'People' })} first><Text>People</Text></Button>
+                <Button style={{ borderLeftWidth: 1, width: 100 }} active={this.state.mode === 'All'} onPress={() => this.setState({ mode: 'All' })} ><Text style={{marginLeft: '25%', marginRight: '25%'}}>All</Text></Button>
+                <Button style={{ borderLeftWidth: 0 }} active={this.state.mode === 'Cars'} onPress={() => this.setState({ mode: 'Cars' })} last ><Text>Cars</Text></Button>
+              </Segment>
+            </Content>
+          </Body>
+        <Content>
+          <Text>{this.state.count}</Text>
         </Content>
       </Container>
     );
