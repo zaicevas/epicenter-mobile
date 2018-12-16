@@ -106,7 +106,7 @@ class GlobalHistory extends React.Component {
       .firstName} ${timestamp.missingModel.lastName}`;
   };
 
-  printInfo = async data => {
+  printInfo = async (data, closeRow) => {
     const location = { longitude: data.longitude, latitude: data.latitude };
     const geocode = await Location.reverseGeocodeAsync(location);
     const locationString = this.getFormattedLocation(geocode);
@@ -116,7 +116,8 @@ class GlobalHistory extends React.Component {
       `${data.missingModel.type === TYPE_PERSON
         ? data.missingModel.firstName + " " + data.missingModel.lastName
         : data.missingModel.message}`,
-      infoString
+      infoString,
+      closeRow
     );
   };
 
@@ -174,6 +175,10 @@ class GlobalHistory extends React.Component {
     this.getDataFromApi().finally(() => this.setState({ refreshing: false }));
   };
 
+  closeRow(secId, rowId, rowMap) {
+    rowMap[`${secId}${rowId}`].props.closeRow();
+  }
+
   render() {
     return this.state.isFetchingData ? (
       <View style={[styles.container, styles.horizontal]}>
@@ -203,8 +208,10 @@ class GlobalHistory extends React.Component {
             leftOpenValue={50}
             dataSource={this.dataSource.cloneWithRows(this.state.timestampList)}
             renderRow={data => <SingleTimestamp timestamp={data} />}
-            renderLeftHiddenRow={data => (
-              <Button full onPress={() => this.printInfo(data)}>
+            renderLeftHiddenRow={(data, secId, rowId, rowMap) => (
+              <Button full onPress={() => {
+                this.printInfo(data, () => this.closeRow(secId, rowId, rowMap));
+                }}>
                 <Icon active name="information-circle" />
               </Button>
             )}
