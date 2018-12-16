@@ -20,7 +20,11 @@ import {
   ListView
 } from "react-native";
 import { Location } from "expo";
-import { MIN_SMILE_AMOUNT } from '../../constants/Recognition';
+import {
+  MIN_SMILE_AMOUNT,
+  TYPE_PERSON,
+  TYPE_CAR
+} from "../../constants/Recognition";
 
 const getDate = timestamp => timestamp.substr(0, 10);
 const getHours = timestamp => timestamp.substr(11, 19);
@@ -40,7 +44,7 @@ const SingleTimestamp = props => {
       </Left>
       <Body>
         <Text>
-          {timestamp.missingModel.type === 0
+          {timestamp.missingModel.type === TYPE_PERSON
             ? `${timestamp.missingModel.firstName} ${timestamp.missingModel
                 .lastName}`
             : `${timestamp.missingModel.message}`}
@@ -86,25 +90,32 @@ class GlobalHistory extends React.Component {
     const startString = `${geocode.city}, ${geocode.country}, ${streetIsSameAsName
       ? geocode.name
       : geocode.street}`;
-      const endString = `${startString}${streetIsSameAsName ? "" : '\n' + geocode.name}`;
+    const endString = `${startString}${streetIsSameAsName
+      ? ""
+      : "\n" + geocode.name}`;
     return endString;
   };
 
-  getFormattedInfo = (locationString, smile) => {
-    if (smile < MIN_SMILE_AMOUNT)
-      return locationString;
-    return `${locationString}
-    Had a big smile on his/her face`;
-  }
+  getFormattedInfo = (locationString, timestamp) => {
+    if (timestamp.missingModel.type === TYPE_PERSON) {
+      if (timestamp.smile < MIN_SMILE_AMOUNT) return locationString;
+      return `${locationString}
+      Had a big smile on his/her face! :)`;
+    }
+    return `${locationString}${"\n"}Owner: ${timestamp.missingModel
+      .firstName} ${timestamp.missingModel.lastName}`;
+  };
 
   printInfo = async data => {
     const location = { longitude: data.longitude, latitude: data.latitude };
     const geocode = await Location.reverseGeocodeAsync(location);
     const locationString = this.getFormattedLocation(geocode);
-    const infoString = this.getFormattedInfo(locationString, data.smile);
+    const infoString = this.getFormattedInfo(locationString, data);
     console.log(infoString);
     Alert.alert(
-      `${data.missingModel.firstName} ${data.missingModel.lastName}`,
+      `${data.missingModel.type === TYPE_PERSON
+        ? data.missingModel.firstName + " " + data.missingModel.lastName
+        : data.missingModel.message}`,
       infoString
     );
   };
@@ -188,7 +199,7 @@ class GlobalHistory extends React.Component {
           }
         >
           <List
-          disableLeftSwipe
+            disableLeftSwipe
             leftOpenValue={50}
             dataSource={this.dataSource.cloneWithRows(this.state.timestampList)}
             renderRow={data => <SingleTimestamp timestamp={data} />}

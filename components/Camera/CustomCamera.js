@@ -212,7 +212,7 @@ class CustomCamera extends React.Component {
     latitude: location.latitude,
     longitude: location.longitude,
     imageBase64: base64,
-    findPlate: true,
+    findPlate: false,
     findFace: true
   });
 
@@ -234,7 +234,7 @@ class CustomCamera extends React.Component {
       if (modelType[recognizedObject.type] === "Car") {
         message += `${recognizedObject.message} (${searchReason[
           recognizedObject.reason
-        ]}, Owner: ${fullName})\n`;
+        ]})\n`;
       } else if (modelType[recognizedObject.type] === "Person") {
         message += `${fullName} (${searchReason[recognizedObject.reason]})\n`;
       }
