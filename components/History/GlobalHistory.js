@@ -1,5 +1,7 @@
 import React from "react";
 import {
+  Button, 
+  Icon,
   Container,
   Content,
   List,
@@ -10,7 +12,7 @@ import {
   Thumbnail,
   Text,
 } from "native-base";
-import { View, ActivityIndicator, RefreshControl } from "react-native";
+import { Alert, View, ActivityIndicator, RefreshControl, ListView } from "react-native";
 
 const getDate = timestamp => timestamp.substr(0, 10);
 const getHours = timestamp => timestamp.substr(11, 19);
@@ -62,6 +64,8 @@ class GlobalHistory extends React.Component {
     refreshing: false
   };
 
+  dataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
+  
   allTimestampsRequest = () => fetch(
     "https://epicentereu.azurewebsites.net/api/timestamps",
     {
@@ -102,7 +106,6 @@ class GlobalHistory extends React.Component {
         ...timestamp,
         baseImage: mapper[timestamp.missingModel.id]
       }));
-      console.log(timestampList[0].missingModel.firstName);
       this.setState({ timestampList: timestampList });
     });
 
@@ -141,9 +144,20 @@ class GlobalHistory extends React.Component {
             />
           }
         >
-          <List>
-            <AllTimestamps timestampList={this.state.timestampList} />
-          </List>
+          <List
+          leftOpenValue={50}
+            rightOpenValue={-50}
+            dataSource={this.dataSource.cloneWithRows(this.state.timestampList)}
+            renderRow={data => 
+              (<SingleTimestamp timestamp={data}/>)}
+              renderLeftHiddenRow={data =>
+              <Button full onPress={() => Alert.alert(`${data.missingModel.firstName} ${data.missingModel.lastName}`, 'Vilnius, Lithuania')}>
+                <Icon active name="information-circle" />
+              </Button>}
+            renderRightHiddenRow={(data, secId, rowId, rowMap) =>
+              <Button full danger onPress={_ => this.deleteRow(secId, rowId, rowMap)}>
+                <Icon active name="trash" />
+              </Button>} />
         </Content>
       </Container>
     );
