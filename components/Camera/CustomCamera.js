@@ -3,7 +3,7 @@
 import React from "react";
 import NotificationPopup from "react-native-push-notification-popup";
 import "abortcontroller-polyfill";
-import { View, TouchableOpacity, Animated, AsyncStorage } from "react-native";
+import { View, TouchableOpacity, Animated, AsyncStorage,Vibration } from "react-native";
 import { Camera, Permissions, Location } from "expo";
 import { Text, Toast } from "native-base";
 import BottomBar from "./BottomBar";
@@ -225,6 +225,7 @@ class CustomCamera extends React.Component {
 
   showNotification = response => {
     if (!response) return null;
+    Vibration.vibrate();
     const modelType = ["Person", "Car"]; // Plate (instead of Car) in backend
     const searchReason = ["Not searched", "Missing", "Criminal", "Other"];
     let message = "";
