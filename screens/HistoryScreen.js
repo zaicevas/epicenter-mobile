@@ -1,7 +1,7 @@
 import React from "react";
 import { withNavigationFocus } from "react-navigation";
 import GlobalHistory from "../components/History/GlobalHistory";
-import { Button, Text, Body, Container, Content, Segment } from "native-base";
+import { Button, Text, Body, Container, Content, Segment, Toast } from "native-base";
 import { MaterialIcons } from "@expo/vector-icons";
 import {
   Dimensions,
@@ -33,6 +33,12 @@ class HistoryScreen extends React.Component {
                   style: "destructive",
                   onPress: () => {
                     params.handleClear();
+                    Toast.show({
+                text: "Done!",
+                buttonText: "Okay",
+                type: "success",
+                duration: 2000
+              })
                     AsyncStorage.setItem(
                       LOCAL_STORAGE_TIMESTAMPS_KEY,
                       JSON.stringify([])
