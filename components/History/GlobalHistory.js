@@ -23,7 +23,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   ListView,
-  AsyncStorage
+  AsyncStorage,
 } from "react-native";
 import { Location } from "expo";
 import {
