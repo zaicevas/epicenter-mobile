@@ -3,11 +3,11 @@
 import React from "react";
 import NotificationPopup from "react-native-push-notification-popup";
 import "abortcontroller-polyfill";
-import { View, TouchableOpacity, Animated, AsyncStorage,Vibration } from "react-native";
+import { View, TouchableOpacity, Animated, AsyncStorage, Vibration } from "react-native";
 import { Camera, Permissions, Location } from "expo";
 import { Text, Toast } from "native-base";
 import BottomBar from "./BottomBar";
-import { LOCAL_STORAGE_TIMESTAMPS_KEY, MIN_SMILE_AMOUNT } from '../../constants/Recognition';
+import { LOCAL_STORAGE_TIMESTAMPS_KEY, MIN_SMILE_AMOUNT, NOTIFICATION_SETTINGS_KEY } from '../../constants/Recognition';
 
 const MAX_PICTURE_ERRORS = 20;
 const MILISECOND = 1000;
@@ -185,7 +185,6 @@ class CustomCamera extends React.Component {
       )
       .then(
         response => {
-          console.log("Successful promise chain in doRecognition()");
           if (!this.state.isFilming) {
             // if user switched tab/pressed on filming,
             // we don't show the notification any more
@@ -194,10 +193,16 @@ class CustomCamera extends React.Component {
           if (response.length > 0) {
             this.addTimestampIdsToLocalStorage(response);
           }
-          const unseenEntities = this.getUnseenEntities(response);
-          const unseenSmiles = this.isSomeoneUniqueSmiling(response);
-
-          if (unseenEntities.length > 0) this.showNotification(unseenEntities);
+          AsyncStorage.getItem(NOTIFICATION_SETTINGS_KEY)
+          .then(value => {
+            const parsedValue = JSON.parse(value);
+            if (parsedValue == null || parsedValue === true) {
+              const unseenEntities = this.getUnseenEntities(response);
+              const unseenSmiles = this.isSomeoneUniqueSmiling(response);
+    
+              if (unseenEntities.length > 0) this.showNotification(unseenEntities);
+            }
+          });
           this.takePicture();
         },
         err => {
@@ -223,7 +228,11 @@ class CustomCamera extends React.Component {
     this.doRecognition(requestBody);
   };
 
-  showNotification = response => {
+  showNotification = async response => {
+    const notificationsSettings = await AsyncStorage.getItem(NOTIFICATION_SETTINGS_KEY);
+    const parsedSettings = JSON.parse(notificationsSettings);
+    if (parsedSettings === false)
+      return;
     if (!response) return null;
     Vibration.vibrate();
     const modelType = ["Person", "Car"]; // Plate (instead of Car) in backend
