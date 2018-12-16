@@ -22,7 +22,7 @@ const SingleTimestamp = props => {
   const searchReason = ["Not searched", "Missing", "Criminal", "Other"];
   return (
     <ListItem avatar>
-      <Left>
+      <Left style={{paddingLeft: '4%'}}>
         <Thumbnail
           small
           source={{
@@ -146,17 +146,12 @@ class GlobalHistory extends React.Component {
         >
           <List
           leftOpenValue={50}
-            rightOpenValue={-50}
             dataSource={this.dataSource.cloneWithRows(this.state.timestampList)}
             renderRow={data => 
               (<SingleTimestamp timestamp={data}/>)}
               renderLeftHiddenRow={data =>
               <Button full onPress={() => Alert.alert(`${data.missingModel.firstName} ${data.missingModel.lastName}`, 'Vilnius, Lithuania')}>
                 <Icon active name="information-circle" />
-              </Button>}
-            renderRightHiddenRow={(data, secId, rowId, rowMap) =>
-              <Button full danger onPress={_ => this.deleteRow(secId, rowId, rowMap)}>
-                <Icon active name="trash" />
               </Button>} />
         </Content>
       </Container>
