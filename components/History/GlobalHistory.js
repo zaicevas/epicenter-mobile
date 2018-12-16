@@ -18,7 +18,6 @@ const getHours = timestamp => timestamp.substr(11, 19);
 const SingleTimestamp = props => {
   const { timestamp } = props;
   const searchReason = ["Not searched", "Missing", "Criminal", "Other"];
-  console.log(timestamp.latitude);
   return (
     <ListItem avatar>
       <Left>
@@ -63,7 +62,7 @@ class GlobalHistory extends React.Component {
     refreshing: false
   };
 
-  allTimestampsRequest = fetch(
+  allTimestampsRequest = () => fetch(
     "https://epicentereu.azurewebsites.net/api/timestamps",
     {
       method: "POST",
@@ -76,7 +75,7 @@ class GlobalHistory extends React.Component {
     return Promise.reject(response.json());
   });
 
-  allBaseImagesRequest = fetch(
+  allBaseImagesRequest = () => fetch(
     "https://epicentereu.azurewebsites.net/api/missingmodels/baseimages",
     {
       method: "GET",
@@ -91,8 +90,8 @@ class GlobalHistory extends React.Component {
 
   getDataFromApi = () =>
     Promise.all([
-      this.allTimestampsRequest,
-      this.allBaseImagesRequest
+      this.allTimestampsRequest(),
+      this.allBaseImagesRequest()
     ]).then(responseBody => {
       this.setState({ isFetchingData: false });
       const mapper = {};
@@ -103,6 +102,7 @@ class GlobalHistory extends React.Component {
         ...timestamp,
         baseImage: mapper[timestamp.missingModel.id]
       }));
+      console.log(timestampList[0].missingModel.firstName);
       this.setState({ timestampList: timestampList });
     });
 
@@ -141,9 +141,7 @@ class GlobalHistory extends React.Component {
             />
           }
         >
-          <List
-          leftOpenValue={75}
-          rightOpenValue={-75}>
+          <List>
             <AllTimestamps timestampList={this.state.timestampList} />
           </List>
         </Content>

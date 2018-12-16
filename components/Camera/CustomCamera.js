@@ -221,8 +221,8 @@ class CustomCamera extends React.Component {
   processPicture = async (picture) => {
     this.pictureTakeError = 0;
     const location = await Location.getCurrentPositionAsync({});
+    console.log(location);
     const requestBody = this.getRequestBody(picture.base64, location.coords);
-    console.log(requestBody);
     this.doRecognition(requestBody);
   };
 
