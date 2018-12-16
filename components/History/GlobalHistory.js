@@ -18,6 +18,7 @@ const getHours = timestamp => timestamp.substr(11, 19);
 const SingleTimestamp = props => {
   const { timestamp } = props;
   const searchReason = ["Not searched", "Missing", "Criminal", "Other"];
+  console.log(timestamp.latitude);
   return (
     <ListItem avatar>
       <Left>

@@ -8,8 +8,8 @@ class HistoryScreen extends React.Component {
     };
 
     render() {
-        return <GlobalHistory isScreenFocused={this.props.isFocused} />;
+        return <GlobalHistory />;
     }
 }
 
-export default withNavigationFocus(HistoryScreen);
+export default HistoryScreen;
