@@ -13,24 +13,28 @@ const BottomBar = ({ type, setParentCameraType, isFilming, onFilmButton }) => (
     <TouchableOpacity
       style={styles.bottomButton}
       onPress={async () => {
-        AsyncStorage.setItem(
-        NOTIFICATION_SETTINGS_KEY,
-        true
-      );
-        const nonJsonSettings = await AsyncStorage.getItem(
+        const notificationSettings = await AsyncStorage.getItem(
           NOTIFICATION_SETTINGS_KEY
         );
-        console.log(nonJsonSettings);
+        const jsonSettings = JSON.parse(notificationSettings);
+        const enabled = jsonSettings == true || jsonSettings == null;
+        const disableAction = enabled
+          ? "Disable notifications"
+          : "Enable notifications";
         ActionSheet.show(
           {
-            options: ["Disable notifications", "Cancel"],
+            options: [disableAction, "Cancel"],
             cancelButtonIndex: 1,
-            destructiveButtonIndex: 0,
+            destructiveButtonIndex: enabled ? 0 : -1,
             title: "Settings"
           },
-          buttonIndex => {}
+          buttonIndex => {
+              if (buttonIndex === 1)
+                return;
+            const stringifiedNewSettings = JSON.stringify(!enabled);
+            AsyncStorage.setItem(NOTIFICATION_SETTINGS_KEY, stringifiedNewSettings);
+          }
         );
-        console.log("Camera options toggle");
       }}
     >
       <Octicons name="kebab-horizontal" size={30} color="white" />
