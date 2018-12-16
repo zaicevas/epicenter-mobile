@@ -1,5 +1,7 @@
 import React from "react";
 import {
+  Button,
+  Icon,
   Container,
   Content,
   List,
@@ -8,9 +10,21 @@ import {
   Body,
   Right,
   Thumbnail,
-  Text,
+  Text
 } from "native-base";
-import { View, ActivityIndicator, RefreshControl } from "react-native";
+import {
+  Alert,
+  View,
+  ActivityIndicator,
+  RefreshControl,
+  ListView
+} from "react-native";
+import { Location } from "expo";
+import {
+  MIN_SMILE_AMOUNT,
+  TYPE_PERSON,
+  TYPE_CAR
+} from "../../constants/Recognition";
 
 const getDate = timestamp => timestamp.substr(0, 10);
 const getHours = timestamp => timestamp.substr(11, 19);
@@ -20,7 +34,7 @@ const SingleTimestamp = props => {
   const searchReason = ["Not searched", "Missing", "Criminal", "Other"];
   return (
     <ListItem avatar>
-      <Left>
+      <Left style={{ paddingLeft: "4%" }}>
         <Thumbnail
           small
           source={{
@@ -30,7 +44,7 @@ const SingleTimestamp = props => {
       </Left>
       <Body>
         <Text>
-          {timestamp.missingModel.type === 0
+          {timestamp.missingModel.type === TYPE_PERSON
             ? `${timestamp.missingModel.firstName} ${timestamp.missingModel
                 .lastName}`
             : `${timestamp.missingModel.message}`}
@@ -62,31 +76,75 @@ class GlobalHistory extends React.Component {
     refreshing: false
   };
 
-  allTimestampsRequest = () => fetch(
-    "https://epicentereu.azurewebsites.net/api/timestamps",
-    {
+  dataSource = new ListView.DataSource({
+    rowHasChanged: (r1, r2) => r1 !== r2
+  });
+
+  getFormattedLocation = geocodeArray => {
+    const geocode = geocodeArray[0];
+    if (!geocode) {
+      return "Couldn't get any location data.";
+    }
+    const streetIsSameAsName =
+      geocode.name.substr(0, 5) === geocode.street.substr(0, 5);
+    const startString = `${geocode.city}, ${geocode.country}, ${streetIsSameAsName
+      ? geocode.name
+      : geocode.street}`;
+    const endString = `${startString}${streetIsSameAsName
+      ? ""
+      : "\n" + geocode.name}`;
+    return endString;
+  };
+
+  getFormattedInfo = (locationString, timestamp) => {
+    if (timestamp.missingModel.type === TYPE_PERSON) {
+      if (timestamp.smile < MIN_SMILE_AMOUNT) return locationString;
+      return `${locationString}
+      Had a big smile on his/her face! :)`;
+    }
+    return `${locationString}${"\n"}Owner: ${timestamp.missingModel
+      .firstName} ${timestamp.missingModel.lastName}`;
+  };
+
+  printInfo = async (data, closeRow) => {
+    const location = { longitude: data.longitude, latitude: data.latitude };
+    const geocode = await Location.reverseGeocodeAsync(location);
+    const locationString = this.getFormattedLocation(geocode);
+    const infoString = this.getFormattedInfo(locationString, data);
+    console.log(infoString);
+    Alert.alert(
+      `${data.missingModel.type === TYPE_PERSON
+        ? data.missingModel.firstName + " " + data.missingModel.lastName
+        : data.missingModel.message}`,
+      infoString,
+      closeRow
+    );
+  };
+
+  allTimestampsRequest = () =>
+    fetch("https://epicentereu.azurewebsites.net/api/timestamps", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       }
-    }
-  ).then(response => {
-    if (response.status === 200) return Promise.resolve(response.json());
-    return Promise.reject(response.json());
-  });
+    }).then(response => {
+      if (response.status === 200) return Promise.resolve(response.json());
+      return Promise.reject(response.json());
+    });
 
-  allBaseImagesRequest = () => fetch(
-    "https://epicentereu.azurewebsites.net/api/missingmodels/baseimages",
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
+  allBaseImagesRequest = () =>
+    fetch(
+      "https://epicentereu.azurewebsites.net/api/missingmodels/baseimages",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
       }
-    }
-  ).then(response => {
-    if (response.status === 200) return Promise.resolve(response.json());
-    return Promise.reject(response.json());
-  });
+    ).then(response => {
+      if (response.status === 200) return Promise.resolve(response.json());
+      return Promise.reject(response.json());
+    });
 
   getDataFromApi = () =>
     Promise.all([
@@ -102,20 +160,24 @@ class GlobalHistory extends React.Component {
         ...timestamp,
         baseImage: mapper[timestamp.missingModel.id]
       }));
-      console.log(timestampList[0].missingModel.firstName);
       this.setState({ timestampList: timestampList });
     });
 
   componentDidMount() {
     this.setState({ isFetchingData: true });
     this.getDataFromApi();
+    Location.setApiKey("AIzaSyAuD_4MSfBdHkJQA0XsinH1j0IhfuDFLMc");
   }
 
   _onRefresh = () => {
     console.log("refreshing");
     this.setState({ refreshing: true });
-    this.getDataFromApi().finally(() => this.setState({refreshing: false}));
+    this.getDataFromApi().finally(() => this.setState({ refreshing: false }));
   };
+
+  closeRow(secId, rowId, rowMap) {
+    rowMap[`${secId}${rowId}`].props.closeRow();
+  }
 
   render() {
     return this.state.isFetchingData ? (
@@ -141,9 +203,19 @@ class GlobalHistory extends React.Component {
             />
           }
         >
-          <List>
-            <AllTimestamps timestampList={this.state.timestampList} />
-          </List>
+          <List
+            disableLeftSwipe
+            leftOpenValue={50}
+            dataSource={this.dataSource.cloneWithRows(this.state.timestampList)}
+            renderRow={data => <SingleTimestamp timestamp={data} />}
+            renderLeftHiddenRow={(data, secId, rowId, rowMap) => (
+              <Button full onPress={() => {
+                this.printInfo(data, () => this.closeRow(secId, rowId, rowMap));
+                }}>
+                <Icon active name="information-circle" />
+              </Button>
+            )}
+          />
         </Content>
       </Container>
     );
