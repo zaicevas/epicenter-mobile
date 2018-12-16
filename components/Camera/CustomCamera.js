@@ -138,7 +138,7 @@ class CustomCamera extends React.Component {
     if (uniqueSmileIds.length > 0) {
       this.updateEntitiesSet(uniqueSmileIds, this.smilesSet);
       Toast.show({
-        text: "Subject is smiling. He might be a maniac",
+        text: "Person is smiling. He might be a maniac!",
         textStyle: { color: "yellow" },
         type: "default",
         position: "bottom",
@@ -219,7 +219,6 @@ class CustomCamera extends React.Component {
   processPicture = async (picture) => {
     this.pictureTakeError = 0;
     const location = await Location.getCurrentPositionAsync({});
-    console.log(location);
     const requestBody = this.getRequestBody(picture.base64, location.coords);
     this.doRecognition(requestBody);
   };

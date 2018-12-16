@@ -82,12 +82,22 @@ class GlobalHistory extends React.Component {
     localTimestampList: [],
     isFetchingData: true,
     refreshing: false,
-    mode: "All"
+    mode: "My"
   };
 
   dataSource = new ListView.DataSource({
     rowHasChanged: (r1, r2) => r1 !== r2
   });
+
+  static getDerivedStateFromProps(props, state) {
+    if (props.clearLocalHistory) {
+      props.clearLocalHistory();
+      return {...state,
+        localTimestampList: []
+      }
+    }
+    return state;
+  }  
 
   getFormattedLocation = geocodeArray => {
     const geocode = geocodeArray[0];
@@ -96,9 +106,9 @@ class GlobalHistory extends React.Component {
     }
     const streetIsSameAsName = !geocode.street ||
       (geocode.name.substr(0, 5) === geocode.street.substr(0, 5));
-    const startString = `${geocode.city}, ${geocode.country}, ${streetIsSameAsName
-      ? geocode.name
-      : geocode.street}`;
+    const startString = `${geocode.city || ""}, ${geocode.country || ""}, ${streetIsSameAsName
+      ? (geocode.name || "")
+      : (geocode.street || "")}`;
     const endString = `${startString}${streetIsSameAsName
       ? ""
       : "\n" + geocode.name}`;
@@ -118,6 +128,7 @@ class GlobalHistory extends React.Component {
   printInfo = async (data, closeRow) => {
     const location = { longitude: data.longitude, latitude: data.latitude };
     const geocode = await Location.reverseGeocodeAsync(location);
+    console.log(geocode);
     const locationString = this.getFormattedLocation(geocode);
     const infoString = this.getFormattedInfo(locationString, data);
     Alert.alert(
