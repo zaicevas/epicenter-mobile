@@ -22,10 +22,12 @@ import {
   View,
   ActivityIndicator,
   RefreshControl,
-  ListView
+  ListView,
+  AsyncStorage
 } from "react-native";
 import { Location } from "expo";
 import {
+  LOCAL_STORAGE_TIMESTAMPS_KEY,
   MIN_SMILE_AMOUNT,
   TYPE_PERSON,
   TYPE_CAR
@@ -77,9 +79,10 @@ const AllTimestamps = props => {
 class GlobalHistory extends React.Component {
   state = {
     timestampList: [],
+    localTimestampList: [],
     isFetchingData: true,
     refreshing: false,
-    mode: "My",
+    mode: "All"
   };
 
   dataSource = new ListView.DataSource({
@@ -89,10 +92,10 @@ class GlobalHistory extends React.Component {
   getFormattedLocation = geocodeArray => {
     const geocode = geocodeArray[0];
     if (!geocode) {
-      return "Couldn't get any location data.";
+      return "No location data.";
     }
-    const streetIsSameAsName =
-      geocode.name.substr(0, 5) === geocode.street.substr(0, 5);
+    const streetIsSameAsName = !geocode.street ||
+      (geocode.name.substr(0, 5) === geocode.street.substr(0, 5));
     const startString = `${geocode.city}, ${geocode.country}, ${streetIsSameAsName
       ? geocode.name
       : geocode.street}`;
@@ -117,7 +120,6 @@ class GlobalHistory extends React.Component {
     const geocode = await Location.reverseGeocodeAsync(location);
     const locationString = this.getFormattedLocation(geocode);
     const infoString = this.getFormattedInfo(locationString, data);
-    console.log(infoString);
     Alert.alert(
       `${data.missingModel.type === TYPE_PERSON
         ? data.missingModel.firstName + " " + data.missingModel.lastName
@@ -152,11 +154,11 @@ class GlobalHistory extends React.Component {
       return Promise.reject(response.json());
     });
 
-  getDataFromApi = () =>
+  getDataFromApi = async () =>
     Promise.all([
       this.allTimestampsRequest(),
       this.allBaseImagesRequest()
-    ]).then(responseBody => {
+    ]).then(async responseBody => {
       this.setState({ isFetchingData: false });
       const mapper = {};
       responseBody[1].forEach(
@@ -166,8 +168,21 @@ class GlobalHistory extends React.Component {
         ...timestamp,
         baseImage: mapper[timestamp.missingModel.id]
       }));
-      this.setState({ timestampList: timestampList });
+      const localList = await this.getLocalTimestamps(timestampList);
+      this.setState({ timestampList: timestampList,
+      localTimestampList: localList });
     });
+
+  getLocalTimestamps = async list => {
+    const nonJsonList = await AsyncStorage.getItem(
+      LOCAL_STORAGE_TIMESTAMPS_KEY
+    );
+    const jsonList = JSON.parse(nonJsonList);
+    const localList = list.filter(timestamp =>
+      jsonList.includes(timestamp.id)
+    );
+    return localList;
+  };
 
   componentDidMount() {
     this.setState({ isFetchingData: true });
@@ -176,7 +191,6 @@ class GlobalHistory extends React.Component {
   }
 
   _onRefresh = () => {
-    console.log("refreshing");
     this.setState({ refreshing: true });
     this.getDataFromApi().finally(() => this.setState({ refreshing: false }));
   };
@@ -188,59 +202,69 @@ class GlobalHistory extends React.Component {
   render() {
     return (
       <Container>
-              <Segment style={{backgroundColor: 'white'}}>
-                <Button
-                  style={{ borderRightWidth: 0}}
-                  active={this.state.mode === "My"}
-                  onPress={() => this.setState({ mode: "My" })}
-                  first
-                >
-                  <Text>My</Text>
-                </Button>
-                <Button
-                  active={this.state.mode === "All"}
-                  onPress={() => this.setState({ mode: "All" })}
-                  last
-                >
-                  <Text>All</Text>
-                </Button>
-              </Segment>
+        <Segment style={{ backgroundColor: "white" }}>
+          <Button
+            style={{ borderRightWidth: 0 }}
+            active={this.state.mode === "My"}
+            onPress={() => this.setState({ mode: "My" })}
+            first
+          >
+            <Text>My</Text>
+          </Button>
+          <Button
+            active={this.state.mode === "All"}
+            onPress={() => this.setState({ mode: "All" })}
+            last
+          >
+            <Text>All</Text>
+          </Button>
+        </Segment>
         {this.state.isFetchingData ? (
-      <View style={[styles.container, styles.horizontal]}>
-        <ActivityIndicator
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-around",
-            padding: 20
-          }}
-          size="large"
-          color="blue"
-        />
-      </View>
-    ) : (
-        <Content
-          refreshControl={
-            <RefreshControl
-              refreshing={this.state.refreshing}
-              onRefresh={this._onRefresh}
-              tintColor="blue"
+          <View style={[styles.container, styles.horizontal]}>
+            <ActivityIndicator
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-around",
+                padding: 20
+              }}
+              size="large"
+              color="blue"
             />
-          }
-        >
-          <List
-            disableLeftSwipe
-            leftOpenValue={50}
-            dataSource={this.dataSource.cloneWithRows(this.state.timestampList)}
-            renderRow={data => <SingleTimestamp timestamp={data} />}
-            renderLeftHiddenRow={(data, secId, rowId, rowMap) => (
-              <Button full onPress={() => {
-                this.printInfo(data, () => this.closeRow(secId, rowId, rowMap));
-                }}>
-                <Icon active name="information-circle" />
-              </Button>
-            )}
-          />
-        </Content>)}
+          </View>
+        ) : (
+          <Content
+            refreshControl={
+              <RefreshControl
+                refreshing={this.state.refreshing}
+                onRefresh={this._onRefresh}
+                tintColor="blue"
+              />
+            }
+          >
+            <List
+              disableLeftSwipe
+              leftOpenValue={50}
+              dataSource={
+                this.state.mode === "All"
+                  ? this.dataSource.cloneWithRows(this.state.timestampList)
+                  : this.dataSource.cloneWithRows(this.state.localTimestampList)
+              }
+              renderRow={data => <SingleTimestamp timestamp={data} />}
+              renderLeftHiddenRow={(data, secId, rowId, rowMap) => (
+                <Button
+                  full
+                  onPress={() => {
+                    this.printInfo(data, () =>
+                      this.closeRow(secId, rowId, rowMap)
+                    );
+                  }}
+                >
+                  <Icon active name="information-circle" />
+                </Button>
+              )}
+            />
+          </Content>
+        )}
       </Container>
     );
   }
