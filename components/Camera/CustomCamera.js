@@ -7,14 +7,13 @@ import { View, TouchableOpacity, Animated, AsyncStorage } from "react-native";
 import { Camera, Permissions, Location } from "expo";
 import { Text, Toast } from "native-base";
 import BottomBar from "./BottomBar";
+import { LOCAL_STORAGE_TIMESTAMPS_KEY, MIN_SMILE_AMOUNT } from '../../constants/Recognition';
 
 const MAX_PICTURE_ERRORS = 20;
 const MILISECOND = 1000;
 const ENTITY_NOTIFICATION_INTERVAL_IN_SECONDS = 30;
-const MIN_SMILE_AMOUNT = 0.85; // [0, 1]
 const SMILE_TOAST_DURATION_IN_MS = 4000;
 const MAX_WRONG_STATUS_ERRORS = 5;
-const LOCAL_STORAGE_TIMESTAMPS_KEY = "@LOCAL_STORAGE_TIMESTAMPS_KEY";
 
 const { AbortController } = window;
 const controller = new AbortController();
@@ -97,7 +96,6 @@ class CustomCamera extends React.Component {
   }
 
   takePicture = () => {
-    console.log("takePicture()");
     this.camera
       .takePictureAsync({
         base64: true,

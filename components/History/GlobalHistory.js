@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  Button, 
+  Button,
   Icon,
   Container,
   Content,
@@ -10,9 +10,17 @@ import {
   Body,
   Right,
   Thumbnail,
-  Text,
+  Text
 } from "native-base";
-import { Alert, View, ActivityIndicator, RefreshControl, ListView } from "react-native";
+import {
+  Alert,
+  View,
+  ActivityIndicator,
+  RefreshControl,
+  ListView
+} from "react-native";
+import { Location } from "expo";
+import { MIN_SMILE_AMOUNT } from '../../constants/Recognition';
 
 const getDate = timestamp => timestamp.substr(0, 10);
 const getHours = timestamp => timestamp.substr(11, 19);
@@ -22,7 +30,7 @@ const SingleTimestamp = props => {
   const searchReason = ["Not searched", "Missing", "Criminal", "Other"];
   return (
     <ListItem avatar>
-      <Left style={{paddingLeft: '4%'}}>
+      <Left style={{ paddingLeft: "4%" }}>
         <Thumbnail
           small
           source={{
@@ -64,33 +72,67 @@ class GlobalHistory extends React.Component {
     refreshing: false
   };
 
-  dataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
-  
-  allTimestampsRequest = () => fetch(
-    "https://epicentereu.azurewebsites.net/api/timestamps",
-    {
+  dataSource = new ListView.DataSource({
+    rowHasChanged: (r1, r2) => r1 !== r2
+  });
+
+  getFormattedLocation = geocodeArray => {
+    const geocode = geocodeArray[0];
+    if (!geocode) {
+      return "Couldn't get any location data.";
+    }
+    const streetIsSameAsName =
+      geocode.name.substr(0, 5) === geocode.street.substr(0, 5);
+    const startString = `${geocode.city}, ${geocode.country}, ${streetIsSameAsName
+      ? geocode.name
+      : geocode.street}`;
+      const endString = `${startString}${streetIsSameAsName ? "" : '\n' + geocode.name}`;
+    return endString;
+  };
+
+  getFormattedInfo = (locationString, smile) => {
+    if (smile < MIN_SMILE_AMOUNT)
+      return locationString;
+    return `${locationString}
+    Had a big smile on his/her face`;
+  }
+
+  printInfo = async data => {
+    const location = { longitude: data.longitude, latitude: data.latitude };
+    const geocode = await Location.reverseGeocodeAsync(location);
+    const locationString = this.getFormattedLocation(geocode);
+    const infoString = this.getFormattedInfo(locationString, data.smile);
+    console.log(infoString);
+    Alert.alert(
+      `${data.missingModel.firstName} ${data.missingModel.lastName}`,
+      infoString
+    );
+  };
+
+  allTimestampsRequest = () =>
+    fetch("https://epicentereu.azurewebsites.net/api/timestamps", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       }
-    }
-  ).then(response => {
-    if (response.status === 200) return Promise.resolve(response.json());
-    return Promise.reject(response.json());
-  });
+    }).then(response => {
+      if (response.status === 200) return Promise.resolve(response.json());
+      return Promise.reject(response.json());
+    });
 
-  allBaseImagesRequest = () => fetch(
-    "https://epicentereu.azurewebsites.net/api/missingmodels/baseimages",
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
+  allBaseImagesRequest = () =>
+    fetch(
+      "https://epicentereu.azurewebsites.net/api/missingmodels/baseimages",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
       }
-    }
-  ).then(response => {
-    if (response.status === 200) return Promise.resolve(response.json());
-    return Promise.reject(response.json());
-  });
+    ).then(response => {
+      if (response.status === 200) return Promise.resolve(response.json());
+      return Promise.reject(response.json());
+    });
 
   getDataFromApi = () =>
     Promise.all([
@@ -112,12 +154,13 @@ class GlobalHistory extends React.Component {
   componentDidMount() {
     this.setState({ isFetchingData: true });
     this.getDataFromApi();
+    Location.setApiKey("AIzaSyAuD_4MSfBdHkJQA0XsinH1j0IhfuDFLMc");
   }
 
   _onRefresh = () => {
     console.log("refreshing");
     this.setState({ refreshing: true });
-    this.getDataFromApi().finally(() => this.setState({refreshing: false}));
+    this.getDataFromApi().finally(() => this.setState({ refreshing: false }));
   };
 
   render() {
@@ -145,14 +188,16 @@ class GlobalHistory extends React.Component {
           }
         >
           <List
-          leftOpenValue={50}
+          disableLeftSwipe
+            leftOpenValue={50}
             dataSource={this.dataSource.cloneWithRows(this.state.timestampList)}
-            renderRow={data => 
-              (<SingleTimestamp timestamp={data}/>)}
-              renderLeftHiddenRow={data =>
-              <Button full onPress={() => Alert.alert(`${data.missingModel.firstName} ${data.missingModel.lastName}`, 'Vilnius, Lithuania')}>
+            renderRow={data => <SingleTimestamp timestamp={data} />}
+            renderLeftHiddenRow={data => (
+              <Button full onPress={() => this.printInfo(data)}>
                 <Icon active name="information-circle" />
-              </Button>} />
+              </Button>
+            )}
+          />
         </Content>
       </Container>
     );
