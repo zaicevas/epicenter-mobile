@@ -91,6 +91,7 @@ class GlobalHistory extends React.Component {
 
   static getDerivedStateFromProps(props, state) {
     if (props.clearLocalHistory) {
+      props.clearLocalHistory();
       return {...state,
         localTimestampList: []
       }
@@ -105,9 +106,9 @@ class GlobalHistory extends React.Component {
     }
     const streetIsSameAsName = !geocode.street ||
       (geocode.name.substr(0, 5) === geocode.street.substr(0, 5));
-    const startString = `${geocode.city}, ${geocode.country}, ${streetIsSameAsName
-      ? geocode.name
-      : geocode.street}`;
+    const startString = `${geocode.city || ""}, ${geocode.country || ""}, ${streetIsSameAsName
+      ? (geocode.name || "")
+      : (geocode.street || "")}`;
     const endString = `${startString}${streetIsSameAsName
       ? ""
       : "\n" + geocode.name}`;
