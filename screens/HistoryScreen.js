@@ -74,8 +74,6 @@ class HistoryScreen extends React.Component {
   }
 
   render() {
-    console.log("in historyscreen");
-    console.log(this.state.clearLocalHistory);
     return <GlobalHistory clearLocalHistory={this.state.clearLocalHistory} />;
   }
 }
