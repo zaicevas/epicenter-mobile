@@ -44,8 +44,10 @@ const SingleTimestamp = props => {
     <ListItem
       button
       onPress={() => {
-        console.log("open");
-        props.navigation.navigate('Map');
+        const {baseImage, ...timestampWithoutImage} = timestamp;
+        props.navigation.navigate("Map", {
+          timestamp: timestampWithoutImage
+        });
       }}
       avatar
     >
@@ -272,7 +274,11 @@ class GlobalHistory extends React.Component {
                   : this.dataSource.cloneWithRows(this.state.localTimestampList)
               }
               renderRow={data => (
-                <SingleTimestamp key={data.id} navigation={this.props.navigation} timestamp={data} />
+                <SingleTimestamp
+                  key={data.id}
+                  navigation={this.props.navigation}
+                  timestamp={data}
+                />
               )}
               renderLeftHiddenRow={(data, secId, rowId, rowMap) => (
                 <Button
