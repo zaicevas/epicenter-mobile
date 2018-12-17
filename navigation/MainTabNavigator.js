@@ -1,55 +1,73 @@
 /* eslint-disable react/prop-types */
-import React from 'react';
-import { Platform } from 'react-native';
-import { createStackNavigator, createBottomTabNavigator } from 'react-navigation';
+import React from "react";
+import { Platform } from "react-native";
+import {
+  createStackNavigator,
+  createBottomTabNavigator
+} from "react-navigation";
 
-import TabBarIcon from '../components/TabBarIcon';
-import HomeScreen from '../screens/HomeScreen';
-import CameraScreen from '../screens/CameraScreen';
-import HistoryScreen from '../screens/HistoryScreen';
+import TabBarIcon from "../components/TabBarIcon";
+import HomeScreen from "../screens/HomeScreen";
+import CameraScreen from "../screens/CameraScreen";
+import HistoryScreen from "../screens/HistoryScreen";
+import MapScreen from "../screens/MapScreen";
 
 const HomeStack = createStackNavigator({
-    Home: HomeScreen,
+  Home: HomeScreen
 });
 
 HomeStack.navigationOptions = {
-    tabBarLabel: 'Home',
-    tabBarIcon: ({ focused }) => (
-        <TabBarIcon
-            focused={focused}
-            name={
-                Platform.OS === 'ios'
-                    ? `ios-information-circle${focused ? '' : '-outline'}`
-                    : 'md-information-circle'
-            }
-        />
-    ),
+  tabBarLabel: "Home",
+  tabBarIcon: ({ focused }) => (
+    <TabBarIcon
+      focused={focused}
+      name={
+        Platform.OS === "ios"
+          ? `ios-information-circle${focused ? "" : "-outline"}`
+          : "md-information-circle"
+      }
+    />
+  )
 };
 
 const CameraStack = createStackNavigator({
-    Camera: CameraScreen,
+  Camera: CameraScreen
 });
 
 CameraStack.navigationOptions = {
-    tabBarLabel: 'Camera',
-    tabBarIcon: ({ focused }) => (
-        <TabBarIcon focused={focused} name={Platform.OS === 'ios' ? 'md-camera' : 'md-link'} />
-    ),
+  tabBarLabel: "Camera",
+  tabBarIcon: ({ focused }) => (
+    <TabBarIcon
+      focused={focused}
+      name={Platform.OS === "ios" ? "md-camera" : "md-link"}
+    />
+  )
 };
 
 const HistoryStack = createStackNavigator({
-    History: HistoryScreen,
-});
+  History: {
+    screen: HistoryScreen
+  },
+  Map: {
+      screen: MapScreen
+  },
+    },
+    {
+        initialRouteName: 'History'
+    });
 
 HistoryStack.navigationOptions = {
-    tabBarLabel: 'History',
-    tabBarIcon: ({ focused }) => (
-        <TabBarIcon focused={focused} name={Platform.OS === 'ios' ? 'ios-book' : 'md-book'} />
-    ),
+  tabBarLabel: "History",
+  tabBarIcon: ({ focused }) => (
+    <TabBarIcon
+      focused={focused}
+      name={Platform.OS === "ios" ? "ios-book" : "md-book"}
+    />
+  )
 };
 
 export default createBottomTabNavigator({
-    HomeStack,
-    CameraStack,
-    HistoryStack,
+  HomeStack,
+  CameraStack,
+  HistoryStack
 });
