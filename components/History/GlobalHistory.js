@@ -24,6 +24,7 @@ import {
   RefreshControl,
   ListView,
   AsyncStorage,
+  TouchableOpacity
 } from "react-native";
 import { Location } from "expo";
 import {
@@ -40,7 +41,16 @@ const SingleTimestamp = props => {
   const { timestamp } = props;
   const searchReason = ["Not searched", "Missing", "Criminal", "Other"];
   return (
-    <ListItem avatar>
+    <ListItem
+      button
+      onPress={() => {
+        const {baseImage, ...timestampWithoutImage} = timestamp;
+        props.navigation.navigate("Map", {
+          timestamp: timestampWithoutImage
+        });
+      }}
+      avatar
+    >
       <Left style={{ paddingLeft: "4%" }}>
         <Thumbnail
           small
@@ -92,23 +102,24 @@ class GlobalHistory extends React.Component {
   static getDerivedStateFromProps(props, state) {
     if (props.clearLocalHistory) {
       props.clearLocalHistory();
-      return {...state,
+      return {
+        ...state,
         localTimestampList: []
-      }
+      };
     }
     return state;
-  }  
+  }
 
   getFormattedLocation = geocodeArray => {
     const geocode = geocodeArray[0];
     if (!geocode) {
       return "No location data.";
     }
-    const streetIsSameAsName = !geocode.street ||
-      (geocode.name.substr(0, 5) === geocode.street.substr(0, 5));
-    const startString = `${geocode.city || ""}, ${geocode.country || ""}, ${streetIsSameAsName
-      ? (geocode.name || "")
-      : (geocode.street || "")}`;
+    const streetIsSameAsName =
+      !geocode.street ||
+      geocode.name.substr(0, 5) === geocode.street.substr(0, 5);
+    const startString = `${geocode.city || ""}, ${geocode.country ||
+      ""}, ${streetIsSameAsName ? geocode.name || "" : geocode.street || ""}`;
     const endString = `${startString}${streetIsSameAsName
       ? ""
       : "\n" + geocode.name}`;
@@ -180,8 +191,10 @@ class GlobalHistory extends React.Component {
         baseImage: mapper[timestamp.missingModel.id]
       }));
       const localList = await this.getLocalTimestamps(timestampList);
-      this.setState({ timestampList: timestampList,
-      localTimestampList: localList });
+      this.setState({
+        timestampList: timestampList,
+        localTimestampList: localList
+      });
     });
 
   getLocalTimestamps = async list => {
@@ -189,9 +202,7 @@ class GlobalHistory extends React.Component {
       LOCAL_STORAGE_TIMESTAMPS_KEY
     );
     const jsonList = JSON.parse(nonJsonList);
-    const localList = list.filter(timestamp =>
-      jsonList.includes(timestamp.id)
-    );
+    const localList = list.filter(timestamp => jsonList.includes(timestamp.id));
     return localList;
   };
 
@@ -224,7 +235,9 @@ class GlobalHistory extends React.Component {
           </Button>
           <Button
             active={this.state.mode === "All"}
-            onPress={() => this.setState({ mode: "All" })}
+            onPress={() => {
+              this.setState({ mode: "All" });
+            }}
             last
           >
             <Text>All</Text>
@@ -260,7 +273,13 @@ class GlobalHistory extends React.Component {
                   ? this.dataSource.cloneWithRows(this.state.timestampList)
                   : this.dataSource.cloneWithRows(this.state.localTimestampList)
               }
-              renderRow={data => <SingleTimestamp timestamp={data} />}
+              renderRow={data => (
+                <SingleTimestamp
+                  key={data.id}
+                  navigation={this.props.navigation}
+                  timestamp={data}
+                />
+              )}
               renderLeftHiddenRow={(data, secId, rowId, rowMap) => (
                 <Button
                   full

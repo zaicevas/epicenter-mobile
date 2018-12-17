@@ -15,6 +15,7 @@ class HistoryScreen extends React.Component {
   state = { clearLocalHistory: null };
   static navigationOptions = ({ navigation }) => {
     const { params = {} } = navigation.state;
+    
     return {
       title: "History",
       headerRight: (
@@ -74,7 +75,7 @@ class HistoryScreen extends React.Component {
   }
 
   render() {
-    return <GlobalHistory clearLocalHistory={this.state.clearLocalHistory} />;
+    return <GlobalHistory navigation={this.props.navigation} clearLocalHistory={this.state.clearLocalHistory} />;
   }
 }
 
