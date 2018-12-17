@@ -3,12 +3,14 @@ import { MapView } from "expo";
 import { Button, Text } from "native-base";
 
 class MapScreen extends React.Component {
+
   render() {
     const { navigation } = this.props;
     const timestamp = navigation.getParam("timestamp", {
       longitude: 25.213513073304817,
       latitude: 54.689606837107405
     });
+    const searchReason = ["Not searched", "Missing", "Criminal", "Other"];
     console.log(timestamp);
     return (
       <MapView
@@ -31,7 +33,7 @@ class MapScreen extends React.Component {
                   .lastName}`
               : timestamp.missingModel.message
           }
-          description="desc"
+          description={timestamp.dateAndTime}
         />
         <MapView.Circle
           center={{
