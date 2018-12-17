@@ -139,7 +139,6 @@ class GlobalHistory extends React.Component {
   printInfo = async (data, closeRow) => {
     const location = { longitude: data.longitude, latitude: data.latitude };
     const geocode = await Location.reverseGeocodeAsync(location);
-    console.log(geocode);
     const locationString = this.getFormattedLocation(geocode);
     const infoString = this.getFormattedInfo(locationString, data);
     Alert.alert(

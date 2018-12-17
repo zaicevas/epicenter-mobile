@@ -11,7 +11,6 @@ class MapScreen extends React.Component {
       latitude: 54.689606837107405
     });
     const searchReason = ["Not searched", "Missing", "Criminal", "Other"];
-    console.log(timestamp);
     return (
       <MapView
         style={{ flex: 1 }}

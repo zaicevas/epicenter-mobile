@@ -252,7 +252,7 @@ class CustomCamera extends React.Component {
       ]} was last seen at ${recognizedObject.lastSeen}\n`;
     });
     this.popup.show({
-      appIconSource: require("../../assets/images/robot-dev.jpg"),
+      appIconSource: require("../../assets/images/logo.png"),
       appTitle: "Epicenter",
       timeText: "Now",
       title: "You've found something!",
@@ -262,7 +262,7 @@ class CustomCamera extends React.Component {
 
   showErrorPopup = message => {
     this.popup.show({
-      appIconSource: require("../../assets/images/robot-dev.jpg"),
+      appIconSource: require("../../assets/images/logo.png"),
       appTitle: "Epicenter",
       timeText: "Now",
       title: "Error",

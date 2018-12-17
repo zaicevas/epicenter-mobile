@@ -33,7 +33,7 @@ export default class HomeScreen extends React.Component {
                 >
                     <View style={styles.welcomeContainer}>
                         <Image
-                            source={require('../assets/images/robot-dev.jpg')}
+                            source={require('../assets/images/logo.png')}
                             style={styles.welcomeImage}
                         />
                     </View>
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     welcomeImage: {
-        height: 80,
+        height: 120,
         resizeMode: 'contain',
         marginTop: 3,
         marginLeft: -10,
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
         color: 'rgba(96,100,109, 1)',
         lineHeight: 24,
         textAlign: 'center',
-        marginTop: '33%',
+        marginTop: '13%',
     },
     tabBarInfoContainer: {
         position: 'absolute',
